@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "AkariUI"
 include(":app")
- 
+include(":uicomponents")
