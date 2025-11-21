@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -29,6 +30,7 @@ import com.akari.uicomponents.textFields.AkariTextFieldState
 import com.akari.uicomponents.textFields.AkariTextFieldVariant
 import com.akari.uicomponents.textFields.state.AkariTextFieldState
 import com.akari.uicomponents.textFields.rememberAkariOutlinedTextFieldState
+import com.akari.uicomponents.ui.examples.DragAndDropExample
 import com.akari.uicomponents.ui.examples.TooltipButtonExample
 import com.akari.uicomponents.ui.theme.AkariUITheme
 
@@ -39,8 +41,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             AkariUITheme {
                 Scaffold() { padding ->
-                    Box(modifier = Modifier.padding(padding)) {
+                    Column(modifier = Modifier.padding(padding)) {
                         TooltipButtonExample()
+                        DragAndDropExample()
                     }
                 }
             }

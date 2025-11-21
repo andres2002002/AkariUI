@@ -1,0 +1,51 @@
+package com.akari.uicomponents.ui.examples
+
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.akari.uicomponents.reorderableComponents.AkariReorderableLazyColumn
+import com.akari.uicomponents.reorderableComponents.DragActivation
+import com.akari.uicomponents.reorderableComponents.rememberAkariReorderableState
+
+@Composable
+fun DragAndDropExample() {
+    val items = remember {
+        mutableStateListOf("Akari", "Compose", "Hilt", "Room", "Navigation", "Python")
+    }
+
+    val reorderState = rememberAkariReorderableState<String>{ from, to ->
+        items.apply { add(to, removeAt(from)) }
+    }
+
+    AkariReorderableLazyColumn(
+        items = items,
+        state = reorderState,
+        enabled = true,  // false para deshabilitar
+        dragActivation = DragActivation.LongPress,
+        key = { it }
+    ) { item, isDragging ->
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = if (isDragging) Color.Gray.copy(alpha = 0.3f)
+                else Color.DarkGray
+            )
+        ) {
+            Text(
+                text = item,
+                modifier = Modifier.padding(16.dp),
+                color = Color.White
+            )
+        }
+    }
+}
