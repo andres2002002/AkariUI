@@ -69,7 +69,7 @@ publishing {
             // 2. Define la identificación de la librería (las coordenadas)
             groupId = "com.akari"        // Tu dominio/empresa o un identificador único.
             artifactId = "uicomponents"  // El nombre de la librería, debe ser único.
-            version = project.findProperty("libVersion")?.toString() ?: "1.0.0"   // La versión actual. ¡Incrementa esto con cada cambio!
+            version = project.findProperty("libVersion")!!.toString()    // La versión actual. ¡Incrementa esto con cada cambio!
         }
     }
 
