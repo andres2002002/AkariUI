@@ -37,14 +37,13 @@ fun <T> LazyItemScope.AkariReorderableItem(
     val currentIndex by rememberUpdatedState(index)
     val currentItemHeight by rememberUpdatedState(itemHeight)
 
-    val dragModifier = when {
-        !enabled -> Modifier
-        dragActivation == DragActivation.Immediate -> {
-            Modifier.pointerInput(Unit) {
+    val dragModifier = if (!enabled) {
+        Modifier
+    } else {
+        Modifier.pointerInput( dragActivation) {
+            if (dragActivation == DragActivation.Immediate) {
                 detectDragGestures(
-                    onDragStart = {
-                        state.startDragging(currentIndex, currentItemHeight)
-                    },
+                    onDragStart = { state.startDragging(currentIndex, currentItemHeight) },
                     onDrag = { change, dragAmount ->
                         change.consume()
                         state.dragBy(dragAmount.y)
@@ -53,14 +52,9 @@ fun <T> LazyItemScope.AkariReorderableItem(
                     onDragEnd = { state.stopDragging() },
                     onDragCancel = { state.stopDragging() }
                 )
-            }
-        }
-        else -> {
-            Modifier.pointerInput(Unit) {
+            } else {
                 detectDragGesturesAfterLongPress(
-                    onDragStart = {
-                        state.startDragging(currentIndex, currentItemHeight)
-                    },
+                    onDragStart = { state.startDragging(currentIndex, currentItemHeight) },
                     onDrag = { change, dragAmount ->
                         change.consume()
                         state.dragBy(dragAmount.y)
@@ -72,6 +66,7 @@ fun <T> LazyItemScope.AkariReorderableItem(
             }
         }
     }
+
 
     // NO usar animateItem() en el ítem que se arrastra
     val itemModifier = if (isDragging) {

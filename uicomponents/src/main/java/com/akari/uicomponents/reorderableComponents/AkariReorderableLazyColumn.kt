@@ -11,9 +11,12 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -30,65 +33,14 @@ fun <T> AkariReorderableLazyColumn(
     key: (T) -> Any,
     itemContent: @Composable (item: T, isDragging: Boolean) -> Unit
 ) {
-    val scope = rememberCoroutineScope()
-
-    // Auto-scroll con throttling para evitar llamadas excesivas
-    val autoScrollJob = remember { mutableStateOf<Job?>(null) }
-
-    LaunchedEffect(state.draggedIndex) {
-        if (state.draggedIndex == null) {
-            autoScrollJob.value?.cancel()
-            return@LaunchedEffect
-        }
-
-        // Continuous auto-scroll check
-        while (state.draggedIndex != null) {
-            val layoutInfo = lazyListState.layoutInfo
-            val draggedIdx = state.draggedIndex ?: break
-            val draggedItem = layoutInfo.visibleItemsInfo
-                .firstOrNull { it.index == draggedIdx }
-
-            if (draggedItem != null) {
-                val itemCenter = draggedItem.offset + state.draggedOffsetY + draggedItem.size / 2f
-                val viewportStart = layoutInfo.viewportStartOffset
-                val viewportEnd = layoutInfo.viewportEndOffset
-                val scrollThreshold = 100f
-                val scrollSpeed = 10f
-
-                when {
-                    itemCenter < viewportStart + scrollThreshold -> {
-                        lazyListState.scrollBy(-scrollSpeed)
-                    }
-                    itemCenter > viewportEnd - scrollThreshold -> {
-                        lazyListState.scrollBy(scrollSpeed)
-                    }
-                }
-            }
-            delay(16) // ~60fps
-        }
+    val isDragging by remember {
+        derivedStateOf { state.draggedIndex != null }
     }
 
-/*    // Auto-scroll cuando se arrastra cerca de los bordes
-    LaunchedEffect(state.draggedIndex, state.draggedOffsetY) {
-        val draggedIdx = state.draggedIndex ?: return@LaunchedEffect
-        val layoutInfo = lazyListState.layoutInfo
-        val draggedItem = layoutInfo.visibleItemsInfo
-            .firstOrNull { it.index == draggedIdx } ?: return@LaunchedEffect
-
-        val itemCenter = draggedItem.offset + state.draggedOffsetY + draggedItem.size / 2f
-        val viewportStart = layoutInfo.viewportStartOffset
-        val viewportEnd = layoutInfo.viewportEndOffset
-        val scrollThreshold = 100f
-
-        when {
-            itemCenter < viewportStart + scrollThreshold -> {
-                lazyListState.animateScrollBy(-draggedItem.size.toFloat())
-            }
-            itemCenter > viewportEnd - scrollThreshold -> {
-                lazyListState.animateScrollBy(draggedItem.size.toFloat())
-            }
-        }
-    }*/
+    // Auto-scroll optimizado: solo corre cuando hay drag activo
+    if (isDragging) {
+        AutoScrollEffect(state, lazyListState)
+    }
 
     LazyColumn(
         modifier = modifier,
@@ -98,7 +50,10 @@ fun <T> AkariReorderableLazyColumn(
             items = items,
             key = { _, item -> key(item) }
         ) { index, item ->
-            val isDragging = state.draggedIndex == index
+            // Derivar isDragging por ítem para minimizar recomposiciones
+            val isItemDragging by remember(index) {
+                derivedStateOf { state.draggedIndex == index }
+            }
 
             AkariReorderableItem(
                 index = index,
@@ -106,10 +61,52 @@ fun <T> AkariReorderableLazyColumn(
                 lazyListState = lazyListState,
                 enabled = enabled,
                 dragActivation = dragActivation,
-                isDragging = isDragging
+                isDragging = isItemDragging
             ) {
-                itemContent(item, isDragging)
+                itemContent(item, isItemDragging)
             }
+        }
+    }
+}
+
+@Composable
+private fun AutoScrollEffect(
+    state: AkariReorderableState<*>,
+    lazyListState: LazyListState
+) {
+    LaunchedEffect(Unit) {
+        while (true) {
+            val draggedIdx = state.draggedIndex
+            if (draggedIdx != null) {
+                val layoutInfo = lazyListState.layoutInfo
+                val draggedItem = layoutInfo.visibleItemsInfo
+                    .find { it.index == draggedIdx }
+
+                if (draggedItem != null) {
+                    val itemCenter = draggedItem.offset + state.draggedOffsetY + draggedItem.size / 2f
+                    val viewportStart = layoutInfo.viewportStartOffset
+                    val viewportEnd = layoutInfo.viewportEndOffset
+                    val scrollThreshold = 100f
+
+                    // Scroll proporcional a la cercanía al borde
+                    val scrollAmount = when {
+                        itemCenter < viewportStart + scrollThreshold -> {
+                            val proximity = 1f - (itemCenter - viewportStart) / scrollThreshold
+                            -15f * proximity.coerceIn(0f, 1f)
+                        }
+                        itemCenter > viewportEnd - scrollThreshold -> {
+                            val proximity = 1f - (viewportEnd - itemCenter) / scrollThreshold
+                            15f * proximity.coerceIn(0f, 1f)
+                        }
+                        else -> 0f
+                    }
+
+                    if (scrollAmount != 0f) {
+                        lazyListState.scrollBy(scrollAmount)
+                    }
+                }
+            }
+            withFrameNanos { }
         }
     }
 }

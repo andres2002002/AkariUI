@@ -1,5 +1,6 @@
 package com.akari.uicomponents.reorderableComponents
 
+import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.LazyListLayoutInfo
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -14,55 +15,70 @@ class AkariReorderableState<T>(
     var draggedIndex by mutableStateOf<Int?>(null)
         private set
 
-    var draggedOffsetY by mutableFloatStateOf(0f)
-        private set
+    // Separar el offset para que solo el ítem arrastrado lo lea
+    private var _draggedOffsetY = mutableFloatStateOf(0f)
+    val draggedOffsetY: Float get() = _draggedOffsetY.floatValue
 
-    // Guardamos el tamaño del ítem arrastrado para cálculos precisos
     private var draggedItemSize: Int = 0
 
     fun startDragging(index: Int, itemSize: Int) {
         draggedIndex = index
-        draggedOffsetY = 0f
+        _draggedOffsetY.floatValue = 0f
         draggedItemSize = itemSize
     }
 
     fun dragBy(delta: Float) {
-        draggedOffsetY += delta
+        _draggedOffsetY.floatValue += delta
     }
 
     fun stopDragging() {
         draggedIndex = null
-        draggedOffsetY = 0f
+        _draggedOffsetY.floatValue = 0f
         draggedItemSize = 0
     }
 
     fun tryReorder(layoutInfo: LazyListLayoutInfo) {
         val from = draggedIndex ?: return
-        val draggedItem = layoutInfo.visibleItemsInfo
-            .firstOrNull { it.index == from } ?: return
+        val visibleItems = layoutInfo.visibleItemsInfo
 
-        val midPoint = draggedItem.offset + draggedOffsetY + draggedItem.size / 2f
+        // Evitar allocations: usar find directamente sin filter
+        var draggedItem: LazyListItemInfo? = null
+        for (item in visibleItems) {
+            if (item.index == from) {
+                draggedItem = item
+                break
+            }
+        }
+        if (draggedItem == null) return
 
-        val target = layoutInfo.visibleItemsInfo
-            .filter { it.index != from }
-            .firstOrNull { info ->
-                midPoint in info.offset.toFloat()..(info.offset + info.size).toFloat()
-            }?.index ?: return
+        val midPoint = draggedItem.offset + _draggedOffsetY.floatValue + draggedItem.size / 2f
+
+        // Buscar target sin crear listas intermedias
+        var targetIndex: Int? = null
+        var targetSize: Int = 0
+        for (item in visibleItems) {
+            if (item.index != from) {
+                val start = item.offset.toFloat()
+                val end = (item.offset + item.size).toFloat()
+                if (midPoint in start..end) {
+                    targetIndex = item.index
+                    targetSize = item.size
+                    break
+                }
+            }
+        }
+
+        val target = targetIndex ?: return
 
         if (target != from) {
-            // Calcular el offset del ítem objetivo para ajuste preciso
-            val targetItem = layoutInfo.visibleItemsInfo
-                .firstOrNull { it.index == target } ?: return
-
             onMove(from, target)
 
-            // Ajustar offset basado en el tamaño real del ítem destino
             val offsetAdjustment = if (target > from) {
-                -targetItem.size.toFloat()
+                -targetSize.toFloat()
             } else {
-                targetItem.size.toFloat()
+                targetSize.toFloat()
             }
-            draggedOffsetY += offsetAdjustment
+            _draggedOffsetY.floatValue += offsetAdjustment
             draggedIndex = target
         }
     }
