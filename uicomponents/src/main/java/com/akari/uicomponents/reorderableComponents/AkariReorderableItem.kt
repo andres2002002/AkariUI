@@ -29,7 +29,7 @@ fun <T> LazyItemScope.AkariReorderableItem(
     enabled: Boolean,
     dragActivation: DragActivation,
     isDragging: Boolean,
-    content: @Composable () -> Unit
+    content: @Composable AkariReorderableItemScope.() -> Unit
 ) {
     var itemHeight by remember { mutableIntStateOf(0) }
 
@@ -37,34 +37,42 @@ fun <T> LazyItemScope.AkariReorderableItem(
     val currentIndex by rememberUpdatedState(index)
     val currentItemHeight by rememberUpdatedState(itemHeight)
 
-    val dragModifier = if (!enabled) {
-        Modifier
-    } else {
-        Modifier.pointerInput( dragActivation) {
-            if (dragActivation == DragActivation.Immediate) {
-                detectDragGestures(
-                    onDragStart = { state.startDragging(currentIndex, currentItemHeight) },
-                    onDrag = { change, dragAmount ->
-                        change.consume()
-                        state.dragBy(dragAmount.y)
-                        state.tryReorder(lazyListState.layoutInfo)
-                    },
-                    onDragEnd = { state.stopDragging() },
-                    onDragCancel = { state.stopDragging() }
-                )
-            } else {
-                detectDragGesturesAfterLongPress(
-                    onDragStart = { state.startDragging(currentIndex, currentItemHeight) },
-                    onDrag = { change, dragAmount ->
-                        change.consume()
-                        state.dragBy(dragAmount.y)
-                        state.tryReorder(lazyListState.layoutInfo)
-                    },
-                    onDragEnd = { state.stopDragging() },
-                    onDragCancel = { state.stopDragging() }
-                )
+    // Actualizar el modifier cuando cambie itemHeight
+    val updatedDragHandleModifier = Modifier
+        .pointerInput(dragActivation, enabled) {
+            if (!enabled) return@pointerInput
+
+            when (dragActivation) {
+                DragActivation.Immediate -> {
+                    detectDragGestures(
+                        onDragStart = { state.startDragging(currentIndex, currentItemHeight) },
+                        onDrag = { change, dragAmount ->
+                            change.consume()
+                            state.dragBy(dragAmount.y)
+                            state.tryReorder(lazyListState.layoutInfo)
+                        },
+                        onDragEnd = { state.stopDragging() },
+                        onDragCancel = { state.stopDragging() }
+                    )
+                }
+                DragActivation.LongPress -> {
+                    detectDragGesturesAfterLongPress(
+                        onDragStart = { state.startDragging(currentIndex, currentItemHeight) },
+                        onDrag = { change, dragAmount ->
+                            change.consume()
+                            state.dragBy(dragAmount.y)
+                            state.tryReorder(lazyListState.layoutInfo)
+                        },
+                        onDragEnd = { state.stopDragging() },
+                        onDragCancel = { state.stopDragging() }
+                    )
+                }
             }
         }
+
+    // Crear el scope que expone el drag handle
+    val scope = remember(updatedDragHandleModifier) {
+        AkariReorderableItemScope(updatedDragHandleModifier)
     }
 
 
@@ -87,8 +95,7 @@ fun <T> LazyItemScope.AkariReorderableItem(
     Box(
         modifier = itemModifier
             .onSizeChanged { itemHeight = it.height }
-            .then(dragModifier)
     ) {
-        content()
+        scope.content()
     }
 }

@@ -1,5 +1,7 @@
 package com.akari.uicomponents.reorderableComponents
 
+import android.os.Build
+import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -18,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 
@@ -28,13 +31,36 @@ fun <T> AkariReorderableLazyColumn(
     state: AkariReorderableState<T>,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    enableHapticFeedback: Boolean = true,
     dragActivation: DragActivation = DragActivation.Immediate,
     lazyListState: LazyListState = rememberLazyListState(),
     key: (T) -> Any,
-    itemContent: @Composable (item: T, isDragging: Boolean) -> Unit
+    itemContent: @Composable AkariReorderableItemScope.(item: T, isDragging: Boolean) -> Unit
 ) {
     val isDragging by remember {
         derivedStateOf { state.draggedIndex != null }
+    }
+
+    // Configurar haptic feedback
+    val view = LocalView.current
+
+    LaunchedEffect(enableHapticFeedback) {
+        if (enableHapticFeedback) {
+            state.onDragStart = {
+                view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+            }
+            state.onReorder = {
+                view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+            }
+            state.onDragEnd = {
+                if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU )
+                    view.performHapticFeedback(HapticFeedbackConstants.GESTURE_END)
+            }
+        } else {
+            state.onDragStart = null
+            state.onReorder = null
+            state.onDragEnd = null
+        }
     }
 
     // Auto-scroll optimizado: solo corre cuando hay drag activo

@@ -2,8 +2,11 @@ package com.akari.uicomponents.ui.examples
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
@@ -41,6 +44,9 @@ fun DragAndDropExample() {
                 else Color.DarkGray
             )
         ) {
+            Icon(
+                modifier = Modifier.dragHandle(),
+                imageVector = Icons.Default.DragHandle, contentDescription = null)
             Text(
                 text = item,
                 modifier = Modifier.padding(16.dp),

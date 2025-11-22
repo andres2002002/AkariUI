@@ -21,10 +21,16 @@ class AkariReorderableState<T>(
 
     private var draggedItemSize: Int = 0
 
+    // Callbacks para haptic feedback
+    internal var onDragStart: (() -> Unit)? = null
+    internal var onReorder: (() -> Unit)? = null
+    internal var onDragEnd: (() -> Unit)? = null
+
     fun startDragging(index: Int, itemSize: Int) {
         draggedIndex = index
         _draggedOffsetY.floatValue = 0f
         draggedItemSize = itemSize
+        onDragStart?.invoke()
     }
 
     fun dragBy(delta: Float) {
@@ -32,11 +38,13 @@ class AkariReorderableState<T>(
     }
 
     fun stopDragging() {
+        if (draggedIndex != null) {
+            onDragEnd?.invoke()
+        }
         draggedIndex = null
         _draggedOffsetY.floatValue = 0f
         draggedItemSize = 0
     }
-
     fun tryReorder(layoutInfo: LazyListLayoutInfo) {
         val from = draggedIndex ?: return
         val visibleItems = layoutInfo.visibleItemsInfo
@@ -72,6 +80,7 @@ class AkariReorderableState<T>(
 
         if (target != from) {
             onMove(from, target)
+            onReorder?.invoke()
 
             val offsetAdjustment = if (target > from) {
                 -targetSize.toFloat()
