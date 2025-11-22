@@ -53,7 +53,7 @@ fun <T> AkariReorderableLazyColumn(
                 view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
             }
             state.onDragEnd = {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     view.performHapticFeedback(HapticFeedbackConstants.GESTURE_END)
                 } else {
                     view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
