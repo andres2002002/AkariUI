@@ -9,14 +9,19 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.akari.uicomponents.reorderableComponents.AkariReorderableColumn
 import com.akari.uicomponents.reorderableComponents.AkariReorderableLazyColumn
 import com.akari.uicomponents.reorderableComponents.DragActivation
-import com.akari.uicomponents.reorderableComponents.rememberAkariReorderableState
+import com.akari.uicomponents.reorderableComponents.rememberAkariReorderableColumnState
+import com.akari.uicomponents.reorderableComponents.rememberAkariReorderableLazyState
 
 @Composable
 fun DragAndDropExample() {
@@ -24,7 +29,7 @@ fun DragAndDropExample() {
         mutableStateListOf("Akari", "Compose", "Hilt", "Room", "Navigation", "Python")
     }
 
-    val reorderState = rememberAkariReorderableState<String>{ from, to ->
+    val reorderState = rememberAkariReorderableLazyState<String>{ from, to ->
         items.apply { add(to, removeAt(from)) }
     }
 
@@ -50,6 +55,42 @@ fun DragAndDropExample() {
             Text(
                 text = item,
                 modifier = Modifier.padding(16.dp),
+                color = Color.White
+            )
+        }
+    }
+}
+
+@Composable
+fun DragDropColumnExample() {
+    val items = remember {
+        mutableStateListOf("Akari", "Compose", "Hilt", "Room", "Navigation", "Python")
+    }
+
+    val reorderState = rememberAkariReorderableColumnState<String> { from, to ->
+        items.apply { add(to, removeAt(from)) }
+    }
+
+    AkariReorderableColumn(
+        items = items,
+        state = reorderState
+    ) { item, isDragging ->
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = if (isDragging) Color.Gray.copy(alpha = 0.25f)
+                else Color.DarkGray
+            )
+        ) {
+            Icon(
+                modifier = Modifier.akariDragHandle(),
+                imageVector = Icons.Default.DragHandle, contentDescription = null
+            )
+            Text(
+                modifier = Modifier.padding(16.dp),
+                text = item,
                 color = Color.White
             )
         }

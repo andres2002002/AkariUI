@@ -3,10 +3,7 @@ package com.akari.uicomponents.reorderableComponents
 import android.os.Build
 import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.gestures.animateScrollBy
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -15,14 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 
 /**
  * A `LazyColumn` composable that enables its items to be reordered via drag-and-drop.
@@ -34,27 +27,27 @@ import kotlinx.coroutines.delay
  *
  * @param T The type of the items in the list.
  * @param items The list of items to display.
- * @param state The state object that manages the reordering process, created via [rememberAkariReorderableState].
+ * @param state The state object that manages the reordering process, created via [rememberAkariReorderableLazyState].
  * @param modifier The modifier to be applied to the `LazyColumn`.
  * @param enabled A boolean to enable or disable the reordering functionality. When `false`, drag gestures are ignored. Defaults to `true`.
  * @param enableHapticFeedback If `true`, provides haptic feedback during drag events (start, reorder, end). Defaults to `true`.
- * @param dragActivation Specifies how a drag gesture is initiated, either immediately or after a long press. See [DragActivation]. Defaults to [DragActivation.Immediate].
+ * @param dragActivation Specifies how a drag gesture is initiated, either immediately or after a long press. See [DragActivation]. Defaults to [DragActivation.LongPress].
  * @param lazyListState The state object to be used by the underlying `LazyColumn`. Defaults to a new state created by `rememberLazyListState`.
  * @param key A factory of stable and unique keys representing the item. Using keys allows Compose to uniquely identify items, which is crucial for performance and correctness in lists.
  * @param itemContent The composable content for each item in the list. The lambda receives an `AkariReorderableItemScope`, the `item` itself, and a `isDragging` boolean.
  * You must use the `Modifier.akariDragHandle()` from the scope on the element that should initiate the drag.
  *
- * @see AkariReorderableState
+ * @see AkariReorderableLazyState
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun <T> AkariReorderableLazyColumn(
     items: List<T>,
-    state: AkariReorderableState<T>,
+    state: AkariReorderableLazyState<T>,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     enableHapticFeedback: Boolean = true,
-    dragActivation: DragActivation = DragActivation.Immediate,
+    dragActivation: DragActivation = DragActivation.LongPress,
     lazyListState: LazyListState = rememberLazyListState(),
     key: (T) -> Any,
     itemContent: @Composable AkariReorderableItemScope.(item: T, isDragging: Boolean) -> Unit
@@ -122,7 +115,7 @@ fun <T> AkariReorderableLazyColumn(
 
 @Composable
 private fun AutoScrollEffect(
-    state: AkariReorderableState<*>,
+    state: AkariReorderableLazyState<*>,
     lazyListState: LazyListState
 ) {
     LaunchedEffect(Unit) {

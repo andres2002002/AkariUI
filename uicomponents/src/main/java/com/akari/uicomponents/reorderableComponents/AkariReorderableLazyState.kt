@@ -20,7 +20,7 @@ import androidx.compose.runtime.setValue
  * and `to` indices of the move. This is where you should update your underlying list data.
  */
 @Stable
-class AkariReorderableState<T>(
+class AkariReorderableLazyState<T>(
     private val onMove: (from: Int, to: Int) -> Unit
 ) {
     var draggedIndex by mutableStateOf<Int?>(null)
