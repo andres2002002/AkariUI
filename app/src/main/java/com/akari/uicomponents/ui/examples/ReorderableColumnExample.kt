@@ -45,7 +45,7 @@ fun DragAndDropExample() {
             )
         ) {
             Icon(
-                modifier = Modifier.dragHandle(),
+                modifier = Modifier.akariDragHandle(),
                 imageVector = Icons.Default.DragHandle, contentDescription = null)
             Text(
                 text = item,
