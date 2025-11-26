@@ -8,6 +8,17 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
+/**
+ * A state object that can be hoisted to control and observe reordering gestures.
+ *
+ * This state is required by the `reorderable` modifier and the `ReorderableItem` composable
+ * to coordinate the drag-and-drop behavior. It holds information about the currently dragged item,
+ * its offset, and handles the logic for initiating, updating, and finalizing the reordering process.
+ *
+ * @param T The type of the items in the list.
+ * @param onMove A callback invoked when an item is moved to a new position. It provides the `from`
+ * and `to` indices of the move. This is where you should update your underlying list data.
+ */
 @Stable
 class AkariReorderableState<T>(
     private val onMove: (from: Int, to: Int) -> Unit

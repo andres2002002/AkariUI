@@ -11,5 +11,5 @@ class AkariReorderableItemScope(
      * Aplica este modifier al composable que actuará como "handle" de arrastre.
      * Típicamente un ícono de tres líneas horizontales.
      */
-    fun Modifier.dragHandle(): Modifier = this.then(dragModifier)
+    fun Modifier.akariDragHandle(): Modifier = this.then(dragModifier)
 }
