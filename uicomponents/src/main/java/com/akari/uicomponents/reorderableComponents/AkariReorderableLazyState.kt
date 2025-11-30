@@ -21,7 +21,9 @@ import androidx.compose.runtime.setValue
  */
 @Stable
 class AkariReorderableLazyState<T>(
-    private val onMove: (from: Int, to: Int) -> Unit
+    private val onMove: (from: Int, to: Int) -> Unit,
+    private val onDragStart: (() -> Unit)? = null,
+    private val onDragEnd: (() -> Unit)? = null
 ) {
     var draggedIndex by mutableStateOf<Int?>(null)
         private set
@@ -33,14 +35,15 @@ class AkariReorderableLazyState<T>(
     private var draggedItemSize: Int = 0
 
     // Callbacks para haptic feedback
-    internal var onDragStart: (() -> Unit)? = null
-    internal var onReorder: (() -> Unit)? = null
-    internal var onDragEnd: (() -> Unit)? = null
+    internal var onInternalDragStart: (() -> Unit)? = null
+    internal var onInternalReorder: (() -> Unit)? = null
+    internal var onInternalDragEnd: (() -> Unit)? = null
 
     fun startDragging(index: Int, itemSize: Int) {
         draggedIndex = index
         _draggedOffsetY.floatValue = 0f
         draggedItemSize = itemSize
+        onInternalDragStart?.invoke()
         onDragStart?.invoke()
     }
 
@@ -50,6 +53,7 @@ class AkariReorderableLazyState<T>(
 
     fun stopDragging() {
         if (draggedIndex != null) {
+            onInternalDragEnd?.invoke()
             onDragEnd?.invoke()
         }
         draggedIndex = null
@@ -91,7 +95,7 @@ class AkariReorderableLazyState<T>(
 
         if (target != from) {
             onMove(from, target)
-            onReorder?.invoke()
+            onInternalReorder?.invoke()
 
             val offsetAdjustment = if (target > from) {
                 -targetSize.toFloat()

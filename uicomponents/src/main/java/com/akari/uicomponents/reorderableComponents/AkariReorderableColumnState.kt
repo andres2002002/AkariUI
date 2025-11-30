@@ -1,18 +1,18 @@
 package com.akari.uicomponents.reorderableComponents
 
-import androidx.annotation.FloatRange
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import java.awt.font.NumericShaper
 
 
 @Stable
 class AkariReorderableColumnState<T>(
-    private val onMove: (from: Int, to: Int) -> Unit
+    private val onMove: (from: Int, to: Int) -> Unit,
+    private val onDragStart: (() -> Unit)? = null,
+    private val onDragEnd: (() -> Unit)? = null
 ) {
     var draggedIndex by mutableStateOf<Int?>(null)
         private set
@@ -23,9 +23,9 @@ class AkariReorderableColumnState<T>(
     private val itemBounds = mutableStateMapOf<Int, IntRange>()
 
     // Callbacks para haptic feedback
-    internal var onDragStart: (() -> Unit)? = null
-    internal var onReorder: (() -> Unit)? = null
-    internal var onDragEnd: (() -> Unit)? = null
+    internal var onInternalDragStart: (() -> Unit)? = null
+    internal var onInternalReorder: (() -> Unit)? = null
+    internal var onInternalDragEnd: (() -> Unit)? = null
 
     fun registerItemBounds(index: Int, top: Int, bottom: Int) {
         itemBounds[index] = top..bottom
@@ -34,6 +34,7 @@ class AkariReorderableColumnState<T>(
     fun startDragging(index: Int) {
         draggedIndex = index
         _draggedOffsetY.floatValue = 0f
+        onInternalDragStart?.invoke()
         onDragStart?.invoke()
     }
 
@@ -43,6 +44,7 @@ class AkariReorderableColumnState<T>(
 
     fun stopDragging() {
         if (draggedIndex != null) {
+            onInternalDragEnd?.invoke()
             onDragEnd?.invoke()
         }
         draggedIndex = null
@@ -71,7 +73,7 @@ class AkariReorderableColumnState<T>(
 
         if (target != from) {
             onMove(from, target)
-            onReorder?.invoke()
+            onInternalReorder?.invoke()
             draggedIndex = target
 
             // Ajustar offset para evitar saltos

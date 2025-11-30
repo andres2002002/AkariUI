@@ -15,16 +15,75 @@ import androidx.compose.runtime.rememberUpdatedState
  * @param onMove A lambda that will be invoked when an item is moved. It provides the `from`
  * index (the original position of the item) and the `to` index (the new position of the item).
  * This lambda should be used to update your underlying data source (e.g., a list) to reflect the reorder.
+ * @param onDragStart An optional lambda that will be invoked when the drag gesture starts.
+ * @param onDragEnd An optional lambda that will be invoked when the drag gesture ends.
  * @return A remembered [AkariReorderableLazyState] instance.
  */
 @Composable
 fun <T> rememberAkariReorderableLazyState(
-    onMove: (from: Int, to: Int) -> Unit
+    onMove: (from: Int, to: Int) -> Unit,
+    onDragStart: (() -> Unit)? = null,
+    onDragEnd: (() -> Unit)? = null
 ): AkariReorderableLazyState<T> {
     val currentOnMove by rememberUpdatedState(onMove)
     return remember {
-        AkariReorderableLazyState { from, to -> currentOnMove(from, to) }
+        AkariReorderableLazyState(
+            onDragStart = onDragStart,
+            onDragEnd = onDragEnd,
+            onMove = currentOnMove
+        )
     }
+}
+
+/**
+ * Creates and remembers a [AkariReorderableLazyState] instance.
+ *
+ * This is the recommended way to create a [AkariReorderableLazyState] in a composable function.
+ * It uses [remember] to ensure that the same state instance is retained across recompositions.
+ *
+ * @param T The type of the items in the list.
+ * @param onMove A lambda that will be invoked when an item is moved. It provides the `from`
+ * index (the original position of the item) and the `to` index (the new position of the item).
+ * This lambda should be used to update your underlying data source (e.g., a list) to reflect the reorder.
+ * @return A remembered [AkariReorderableLazyState] instance.
+ */
+@Composable
+fun <T> rememberAkariReorderableLazyState(
+    onMove: (from: Int, to: Int) -> Unit,
+): AkariReorderableLazyState<T> {
+    val currentOnMove by rememberUpdatedState(onMove)
+    return remember {
+        AkariReorderableLazyState(
+            onMove = currentOnMove
+        )
+    }
+}
+
+/**
+ * Creates and remembers a [AkariReorderableColumnState] instance.
+ *
+ * This is the recommended way to create a [AkariReorderableColumnState] in a composable function.
+ * It uses [remember] to ensure that the same state instance is retained across recompositions.
+ *
+ * @param T The type of the items in the list.
+ * @param onMove A lambda that will be invoked when an item is moved. It provides the `from`
+ * index (the original position of the item) and the `to` index (the new position of the item).
+ * This lambda should be used to update your underlying data source (e.g., a list) to reflect the reorder.
+ * @param onDragStart An optional lambda that will be invoked when the drag gesture starts.
+ * @param onDragEnd An optional lambda that will be invoked when the drag gesture ends.
+ * @return A remembered [AkariReorderableColumnState] instance.
+ */
+@Composable
+fun <T> rememberAkariReorderableColumnState(
+    onMove: (from: Int, to: Int) -> Unit,
+    onDragStart: (() -> Unit)? = null,
+    onDragEnd: (() -> Unit)? = null
+): AkariReorderableColumnState<T> {
+    return remember { AkariReorderableColumnState(
+        onDragStart = onDragStart,
+        onDragEnd = onDragEnd,
+        onMove = onMove
+    ) }
 }
 
 /**
@@ -41,7 +100,9 @@ fun <T> rememberAkariReorderableLazyState(
  */
 @Composable
 fun <T> rememberAkariReorderableColumnState(
-    onMove: (from: Int, to: Int) -> Unit
+    onMove: (from: Int, to: Int) -> Unit,
 ): AkariReorderableColumnState<T> {
-    return remember { AkariReorderableColumnState(onMove) }
+    return remember { AkariReorderableColumnState(
+        onMove = onMove
+    ) }
 }

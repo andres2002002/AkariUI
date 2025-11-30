@@ -61,13 +61,13 @@ fun <T> AkariReorderableLazyColumn(
 
     LaunchedEffect(enableHapticFeedback) {
         if (enableHapticFeedback) {
-            state.onDragStart = {
+            state.onInternalDragStart = {
                 view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
             }
-            state.onReorder = {
+            state.onInternalReorder = {
                 view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
             }
-            state.onDragEnd = {
+            state.onInternalDragEnd = {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     view.performHapticFeedback(HapticFeedbackConstants.GESTURE_END)
                 } else {
@@ -75,9 +75,9 @@ fun <T> AkariReorderableLazyColumn(
                 }
             }
         } else {
-            state.onDragStart = null
-            state.onReorder = null
-            state.onDragEnd = null
+            state.onInternalDragStart = null
+            state.onInternalReorder = null
+            state.onInternalDragEnd = null
         }
     }
 
