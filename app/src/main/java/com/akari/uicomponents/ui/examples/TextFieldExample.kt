@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
+import com.akari.uicomponents.textFields.AkariLabelBehavior
 import com.akari.uicomponents.textFields.AkariTextField
 import com.akari.uicomponents.textFields.AkariTextFieldVariant
 import com.akari.uicomponents.textFields.rememberAkariTextFieldState
@@ -33,7 +34,8 @@ fun TextFieldExample(){
             label = {
                 Text(text = "Label")
             }
-            placeholder = "Placeholder"
+            labelBehavior = AkariLabelBehavior.FLOATING
+            placeholder = {Text("Placeholder")}
             focusRequester = firsFocusRequester
             variant {
                 AkariTextFieldVariant.Outlined

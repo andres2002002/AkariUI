@@ -5,8 +5,10 @@ import androidx.compose.ui.focus.FocusProperties
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.input.TextFieldValue
+import com.akari.uicomponents.textFields.AkariLabelBehavior
 import com.akari.uicomponents.textFields.AkariTextFieldVariant
 import com.akari.uicomponents.textFields.AkariTextFieldBehavior
+import com.akari.uicomponents.textFields.AkariTextFieldPadding
 import com.akari.uicomponents.textFields.AkariTextFieldStyle
 
 /**
@@ -26,7 +28,8 @@ class AkariTextFieldStateBuilder internal constructor(
     private var style: AkariTextFieldStyle = AkariTextFieldStyle()
     private var behavior: AkariTextFieldBehavior = AkariTextFieldBehavior()
     var label: (@Composable () -> Unit)? = null
-    var placeholder: String? = null
+    var labelBehavior: AkariLabelBehavior = AkariLabelBehavior.EXTERNAL
+    var placeholder: (@Composable () -> Unit)? = null
     var prefix: (@Composable () -> Unit)? = null
     var suffix: (@Composable () -> Unit)? = null
     var isError: Boolean = false
@@ -56,13 +59,22 @@ class AkariTextFieldStateBuilder internal constructor(
         behavior.apply(block)
     }
 
+    /**
+     * DSL para configurar el padding del TextField
+     */
+    fun textFieldPadding(block: AkariTextFieldPadding.() -> Unit) {
+        style.textFieldPadding.apply(block)
+    }
+
     internal fun build(): AkariTextFieldState {
+        behavior.validateValues()
         return AkariTextFieldState(
             value = value,
             onValueChange = onValueChange,
             style = style,
             behavior = behavior,
             label = label,
+            labelBehavior = labelBehavior,
             placeholder = placeholder,
             prefix = prefix,
             suffix = suffix,

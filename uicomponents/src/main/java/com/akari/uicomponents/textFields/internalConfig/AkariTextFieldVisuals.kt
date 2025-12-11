@@ -17,7 +17,7 @@ class AkariTextFieldVisuals(
 
     // Enums en lugar de sealed classes para mayor eficiencia
     enum class Component {
-        BORDER, BACKGROUND, HINT, PLACEHOLDER, TEXT, SUPPORTING
+        BORDER, BACKGROUND, HINT, PLACEHOLDER, TEXT, SUPPORTING, LABEL
     }
 
     enum class State {
@@ -89,6 +89,12 @@ class AkariTextFieldVisuals(
             State.FOCUSED to colors.focusedTextColor,
             State.ERROR to colors.errorTextColor,
             State.DISABLED to colors.disabledTextColor
+        ),
+        Component.LABEL to mapOf(
+            State.UNFOCUSED to colors.unfocusedLabelColor,
+            State.FOCUSED to colors.focusedLabelColor,
+            State.ERROR to colors.errorLabelColor,
+            State.DISABLED to colors.disabledLabelColor
         ),
         Component.SUPPORTING to mapOf(
             State.UNFOCUSED to colors.unfocusedSupportingTextColor,

@@ -32,6 +32,7 @@ import com.akari.uicomponents.textFields.state.AkariTextFieldState
 import com.akari.uicomponents.textFields.rememberAkariOutlinedTextFieldState
 import com.akari.uicomponents.ui.examples.DragAndDropExample
 import com.akari.uicomponents.ui.examples.DragDropColumnExample
+import com.akari.uicomponents.ui.examples.TextFieldExample
 import com.akari.uicomponents.ui.examples.TooltipButtonExample
 import com.akari.uicomponents.ui.theme.AkariUITheme
 
@@ -44,6 +45,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold() { padding ->
                     Column(modifier = Modifier.padding(padding)) {
                         TooltipButtonExample()
+                        TextFieldExample()
                         Text("Reorderable Column")
                         DragDropColumnExample()
                         //DragAndDropExample()

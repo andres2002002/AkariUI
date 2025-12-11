@@ -1,6 +1,8 @@
 package com.akari.uicomponents.textFields
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -20,6 +22,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -40,6 +44,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.Dp
@@ -130,21 +135,49 @@ fun AkariTextField(
     val borderThickness = akariStyle.borderThickness ?: 0.dp
 
     val borderColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.BORDER)
-
     val backgroundColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.BACKGROUND)
-
     val textColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.TEXT)
-
     val placeholderColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.PLACEHOLDER)
-
     val supportingTextColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.SUPPORTING)
+    val labelColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.LABEL)
+
+    // Determinar si el label debe estar flotando
+    val isLabelFloating = isFocused || state.value.text.isNotEmpty()
+
+    // Animación del label
+    val labelScale by animateFloatAsState(
+        targetValue = if (isLabelFloating) 0.75f else 1f,
+        animationSpec = tween(150),
+        label = "labelScale"
+    )
+
+    val labelOffsetY by animateDpAsState(
+        targetValue = if (isLabelFloating) (-akariStyle.minHeightTextField/2) else 0.dp,
+        animationSpec = tween(150),
+        label = "labelOffsetY"
+    )
+
+    // Determinar si usar label interno o externo
+    val useInternalLabel = state.labelBehavior == AkariLabelBehavior.FLOATING
 
     Column(
         modifier = modifier.semantics {
             if (state.isError) error(state.supportingText?.toString() ?: "")
         }
     ) {
-        state.label?.invoke()
+        if (!useInternalLabel) {
+            state.label?.let { label ->
+                Box(modifier = Modifier.padding(akariStyle.textFieldPadding.labelPadding)) {
+                    CompositionLocalProvider(
+                        LocalContentColor provides labelColor,
+                        LocalTextStyle provides textStyle.copy(color = labelColor)
+                    ) {
+                        label()
+                    }
+                }
+            }
+        }
+
         // Contenedor visual
         Box(
             modifier = Modifier
@@ -154,38 +187,71 @@ fun AkariTextField(
                     borderThickness = borderThickness,
                     borderColor = borderColor,
                     minHeight = akariStyle.minHeightTextField,
-                    contentPadding = akariStyle.contentPadding
+                    contentPadding = akariStyle.textFieldPadding.contentPadding
                 ),
             contentAlignment = Alignment.CenterStart
         ) {
+            // Label interno flotante
+            if (useInternalLabel && state.label != null) {
+                Box(
+                    modifier = Modifier
+                        .graphicsLayer {
+                            scaleX = labelScale
+                            scaleY = labelScale
+                            translationY = labelOffsetY.toPx()
+                            transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0f)
+                        }
+                ) {
+                    CompositionLocalProvider(
+                        LocalContentColor provides labelColor,
+                        LocalTextStyle provides textStyle.copy(color = labelColor)
+                    ) {
+                        state.label.invoke()
+                    }
+                }
+            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-
                 // Icono inicial
-                state.leadingIcon?.invoke(isFocused)
+                state.leadingIcon?.let { leadingIcon ->
+                    Box(modifier = Modifier.padding(akariStyle.textFieldPadding.leadingIconPadding)) {
+                        leadingIcon(isFocused)
+                    }
+                }
 
                 // Prefijo
-                state.prefix?.invoke()
+                state.prefix?.let { prefix ->
+                    Box(modifier = Modifier.padding(akariStyle.textFieldPadding.prefixPadding)) {
+                        prefix()
+                    }
+                }
 
                 // TextField principal
                 Box(
                     modifier = Modifier
+                        .padding(akariStyle.textFieldPadding.mainContentPadding)
                         .weight(1f)
-                        .defaultMinSize(minHeight = akariStyle.minHeightInnerTextField),
+                        .defaultMinSize(
+                            minWidth = OutlinedTextFieldDefaults.MinWidth,
+                            minHeight = OutlinedTextFieldDefaults.MinHeight,
+                        ),
                     contentAlignment = Alignment.CenterStart
                 ) {
-                    this@Row.AnimatedVisibility(
-                        visible = state.value.text.isEmpty() && state.placeholder != null,
-                        enter = fadeIn(animationSpec = tween(150)),
-                        exit = fadeOut(animationSpec = tween(150))
-                    ) {
-                        Text(
-                            text = state.placeholder.orEmpty(),
-                            color = placeholderColor,
-                            style = textStyle
-                        )
+
+                    if (!useInternalLabel || isLabelFloating) {
+                        this@Row.AnimatedVisibility(
+                            visible = state.value.text.isEmpty() && state.placeholder != null,
+                            enter = fadeIn(animationSpec = tween(150)),
+                            exit = fadeOut(animationSpec = tween(150))
+                        ) {
+                            state.placeholder?.let { placeholder ->
+                                CompositionLocalProvider( LocalContentColor provides placeholderColor) {
+                                    placeholder()
+                                }
+                            }
+                        }
                     }
                     BasicTextField(
                         modifier = Modifier
@@ -224,18 +290,33 @@ fun AkariTextField(
                 }
 
                 // Sufijo
-                state.suffix?.invoke()
+                state.suffix?.let { suffix ->
+                    Box(modifier = Modifier.padding(akariStyle.textFieldPadding.suffixPadding)) {
+                        suffix()
+                    }
+                }
 
                 // Icono final
-                state.trailingIcon?.invoke(isFocused)
+                state.trailingIcon?.let { trailingIcon ->
+                    Box(modifier = Modifier.padding(akariStyle.textFieldPadding.trailingIconPadding)) {
+                        trailingIcon(isFocused)
+                    }
+                }
             }
         }
 
-        // Texto de soporte o error
-        state.supportingText?.let { supportingText ->
-            Spacer(modifier = Modifier.height(4.dp))
-            CompositionLocalProvider(LocalContentColor provides supportingTextColor) {
-                supportingText()
+        AnimatedVisibility(
+            visible = state.value.text.isEmpty() && state.placeholder != null,
+            enter = fadeIn(animationSpec = tween(150)),
+            exit = fadeOut(animationSpec = tween(150))
+        ) {
+            // Texto de soporte o error
+            state.supportingText?.let { supportingText ->
+                Box(modifier = Modifier.padding(akariStyle.textFieldPadding.supportingTextPadding)){
+                    CompositionLocalProvider(LocalContentColor provides supportingTextColor) {
+                        supportingText()
+                    }
+                }
             }
         }
     }

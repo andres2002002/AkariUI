@@ -5,6 +5,7 @@ import androidx.compose.ui.focus.FocusProperties
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.input.TextFieldValue
+import com.akari.uicomponents.textFields.AkariLabelBehavior
 import com.akari.uicomponents.textFields.AkariTextFieldBehavior
 import com.akari.uicomponents.textFields.AkariTextFieldStyle
 
@@ -21,6 +22,7 @@ import com.akari.uicomponents.textFields.AkariTextFieldStyle
  * @param style Defines the visual styling of the text field. See [AkariTextFieldStyle].
  * @param behavior Defines the behavioral properties of the text field. See [AkariTextFieldBehavior].
  * @param label The optional label to be displayed inside or outside the text field.
+ * @param labelBehavior Determines whether the label is displayed inside or outside the text field.
  * @param placeholder The optional placeholder to be displayed when the text field is in focus and
  *   the input text is empty.
  * @param prefix The optional leading composable to be displayed at the beginning of the text field
@@ -45,7 +47,8 @@ data class AkariTextFieldState(
     val style: AkariTextFieldStyle = AkariTextFieldStyle(),
     val behavior: AkariTextFieldBehavior = AkariTextFieldBehavior(),
     val label: (@Composable () -> Unit)? = null,
-    val placeholder: String? = null,
+    val labelBehavior: AkariLabelBehavior = AkariLabelBehavior.EXTERNAL,
+    val placeholder: (@Composable () -> Unit)? = null,
     val prefix: (@Composable () -> Unit)? = null,
     val suffix: (@Composable () -> Unit)? = null,
     val isError: Boolean = false,

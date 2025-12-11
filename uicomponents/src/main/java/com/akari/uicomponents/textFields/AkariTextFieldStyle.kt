@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
  */
 class AkariTextFieldStyle (
     var textStyle: TextStyle = TextStyle.Default,
+    var textFieldPadding: AkariTextFieldPadding = AkariTextFieldPadding(),
     var contentPadding: PaddingValues = PaddingValues(vertical = 8.dp, horizontal = 16.dp),
     var minHeightInnerTextField: Dp = 24.dp,
     var shape: Shape? = null,

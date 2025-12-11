@@ -3,6 +3,7 @@ package com.akari.uicomponents.textFields
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -21,8 +22,7 @@ sealed class AkariTextFieldVariant {
     data object Outlined : AkariTextFieldVariant() {
         override val style = AkariTextFieldStyle(
             contentPadding = PaddingValues(16.dp),
-            borderThickness = 1.dp,
-            shape = RoundedCornerShape(4.dp)
+            borderThickness = 1.dp
         )
         override val behavior = AkariTextFieldBehavior()
     }
@@ -30,8 +30,7 @@ sealed class AkariTextFieldVariant {
     data object Filled : AkariTextFieldVariant() {
         override val style = AkariTextFieldStyle(
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-            borderThickness = 0.dp,
-            shape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)
+            borderThickness = 0.dp
         )
         override val behavior = AkariTextFieldBehavior()
     }
@@ -40,8 +39,7 @@ sealed class AkariTextFieldVariant {
         override val style = AkariTextFieldStyle(
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
             borderThickness = 1.dp,
-            textStyle = TextStyle(fontSize = 14.sp),
-            shape = RoundedCornerShape(24.dp)
+            textStyle = TextStyle(fontSize = 14.sp)
         )
         override val behavior = AkariTextFieldBehavior(
             singleLine = true,
@@ -53,8 +51,7 @@ sealed class AkariTextFieldVariant {
 
     data object Password : AkariTextFieldVariant() {
         override val style = AkariTextFieldStyle(
-            contentPadding = PaddingValues(16.dp),
-            shape = RoundedCornerShape(4.dp)
+            contentPadding = PaddingValues(16.dp)
         )
         override val behavior = AkariTextFieldBehavior(
             singleLine = true,
@@ -69,8 +66,7 @@ sealed class AkariTextFieldVariant {
     data object MultilineMessage : AkariTextFieldVariant() {
         override val style = AkariTextFieldStyle(
             contentPadding = PaddingValues(16.dp),
-            minHeightInnerTextField = 80.dp,
-            shape = RoundedCornerShape(8.dp)
+            minHeightInnerTextField = 80.dp
         )
         override val behavior = AkariTextFieldBehavior(
             singleLine = false,
