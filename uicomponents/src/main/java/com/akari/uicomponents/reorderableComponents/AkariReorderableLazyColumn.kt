@@ -4,6 +4,8 @@ import android.os.Build
 import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -14,8 +16,10 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.dp
 
 /**
  * A `LazyColumn` composable that enables its items to be reordered via drag-and-drop.
@@ -29,11 +33,15 @@ import androidx.compose.ui.platform.LocalView
  * @param items The list of items to display.
  * @param state The state object that manages the reordering process, created via [rememberAkariReorderableLazyState].
  * @param modifier The modifier to be applied to the `LazyColumn`.
- * @param enabled A boolean to enable or disable the reordering functionality. When `false`, drag gestures are ignored. Defaults to `true`.
- * @param enableHapticFeedback If `true`, provides haptic feedback during drag events (start, reorder, end). Defaults to `true`.
+ * @param userScrollEnabled Whether the user can scroll the list. Defaults to `true`.
+ * @param reorderingEnabled A boolean to enable or disable the reordering functionality. When `false`, drag gestures are ignored. Defaults to `true`.
+ * @param hapticsEnabled If `true`, provides haptic feedback during drag events (start, reorder, end). Defaults to `true`.
  * @param dragActivation Specifies how a drag gesture is initiated, either immediately or after a long press. See [DragActivation]. Defaults to [DragActivation.LongPress].
  * @param lazyListState The state object to be used by the underlying `LazyColumn`. Defaults to a new state created by `rememberLazyListState`.
  * @param key A factory of stable and unique keys representing the item. Using keys allows Compose to uniquely identify items, which is crucial for performance and correctness in lists.
+ * @param contentPadding The padding around the content. Defaults to `PaddingValues(0.dp)`.
+ * @param verticalArrangement The vertical arrangement of the children. Defaults to `Arrangement.spacedBy(8.dp)`.
+ * @param horizontalAlignment The horizontal alignment of the children. Defaults to `Alignment.Start`.
  * @param itemContent The composable content for each item in the list. The lambda receives an `AkariReorderableItemScope`, the `item` itself, and a `isDragging` boolean.
  * You must use the `Modifier.akariDragHandle()` from the scope on the element that should initiate the drag.
  *
@@ -45,11 +53,15 @@ fun <T> AkariReorderableLazyColumn(
     items: List<T>,
     state: AkariReorderableLazyState<T>,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    enableHapticFeedback: Boolean = true,
+    userScrollEnabled: Boolean = true,
+    reorderingEnabled: Boolean = true,
+    hapticsEnabled: Boolean = true,
     dragActivation: DragActivation = DragActivation.LongPress,
     lazyListState: LazyListState = rememberLazyListState(),
     key: (T) -> Any,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(8.dp),
+    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     itemContent: @Composable AkariReorderableItemScope.(item: T, isDragging: Boolean) -> Unit
 ) {
     val isDragging by remember {
@@ -59,8 +71,8 @@ fun <T> AkariReorderableLazyColumn(
     // Configurar haptic feedback
     val view = LocalView.current
 
-    LaunchedEffect(enableHapticFeedback) {
-        if (enableHapticFeedback) {
+    LaunchedEffect(hapticsEnabled) {
+        if (hapticsEnabled) {
             state.onInternalDragStart = {
                 view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
             }
@@ -88,6 +100,10 @@ fun <T> AkariReorderableLazyColumn(
 
     LazyColumn(
         modifier = modifier,
+        userScrollEnabled = userScrollEnabled,
+        contentPadding = contentPadding,
+        verticalArrangement = verticalArrangement,
+        horizontalAlignment = horizontalAlignment,
         state = lazyListState
     ) {
         itemsIndexed(
@@ -103,7 +119,7 @@ fun <T> AkariReorderableLazyColumn(
                 index = index,
                 state = state,
                 lazyListState = lazyListState,
-                enabled = enabled,
+                enabled = reorderingEnabled,
                 dragActivation = dragActivation,
                 isDragging = isItemDragging
             ) {

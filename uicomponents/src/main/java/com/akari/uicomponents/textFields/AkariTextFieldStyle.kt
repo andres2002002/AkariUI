@@ -15,21 +15,19 @@ import androidx.compose.ui.unit.dp
  * allowing for a consistent and configurable appearance.
  *
  * @property textStyle The [androidx.compose.ui.text.TextStyle] to be applied to the input text.
- * @property contentPadding The padding applied to the inner content of the text field.
- * @property minHeightInnerTextField The minimum height for the core text field area.
+ * @property textFieldPadding The [AkariTextFieldPadding] to be applied to the text field's container.
  * @property shape The [androidx.compose.ui.graphics.Shape] of the text field's container. If null, a default shape may be used.
- * @property borderThickness The thickness of the border when drawn. If null, no border might be drawn or a default thickness is used.
+ * @property focusedBorderThickness The thickness of the border when the text field is in a focused state.
+ * @property unfocusedBorderThickness The thickness of the border when the text field is in an unfocused state.
  * @property colors A [androidx.compose.material3.TextFieldColors] object defining the colors for different states (focused, unfocused, disabled, etc.).
  * @property cursorBrush The [androidx.compose.ui.graphics.Brush] to be used for painting the cursor. Defaults to a solid black color.
  */
 class AkariTextFieldStyle (
     var textStyle: TextStyle = TextStyle.Default,
-    var contentPadding: PaddingValues = PaddingValues(vertical = 8.dp, horizontal = 16.dp),
-    var minHeightInnerTextField: Dp = 24.dp,
+    var textFieldPadding: AkariTextFieldPadding = AkariTextFieldPadding(),
     var shape: Shape? = null,
-    var borderThickness: Dp? = null,
+    var focusedBorderThickness: Dp? = null,
+    var unfocusedBorderThickness: Dp? = null,
     var colors: TextFieldColors? = null,
     var cursorBrush: Brush? = null
-){
-    val minHeightTextField: Dp = minHeightInnerTextField + 16.dp
-}
+)

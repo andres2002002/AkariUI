@@ -39,10 +39,14 @@ class AkariTextFieldBehavior(
     var keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     var keyboardActions: KeyboardActions = KeyboardActions.Default,
     var visualTransformation: VisualTransformation = VisualTransformation.None
-){
-    init {
-        require(maxLines > 0) { "maxLines debe ser positivo" }
-        require(minLines > 0) { "minLines debe ser positivo" }
-        require(minLines <= maxLines) { "minLines no puede exceder maxLines" }
+) {
+    fun validateValues(){
+        if (singleLine) {
+            minLines = 1
+            maxLines = 1
+        }
+        if (minLines <= 0) minLines = 1
+        if (maxLines <= 0) maxLines = minLines
+        if (minLines > maxLines) maxLines = minLines
     }
 }
