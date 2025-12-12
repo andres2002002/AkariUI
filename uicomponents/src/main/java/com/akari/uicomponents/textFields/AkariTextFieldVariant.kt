@@ -20,25 +20,17 @@ sealed class AkariTextFieldVariant {
     abstract val behavior: AkariTextFieldBehavior
 
     data object Outlined : AkariTextFieldVariant() {
-        override val style = AkariTextFieldStyle(
-            contentPadding = PaddingValues(16.dp),
-            borderThickness = 1.dp
-        )
+        override val style = AkariTextFieldStyle()
         override val behavior = AkariTextFieldBehavior()
     }
 
     data object Filled : AkariTextFieldVariant() {
-        override val style = AkariTextFieldStyle(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-            borderThickness = 0.dp
-        )
+        override val style = AkariTextFieldStyle()
         override val behavior = AkariTextFieldBehavior()
     }
 
     data object Search : AkariTextFieldVariant() {
         override val style = AkariTextFieldStyle(
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-            borderThickness = 1.dp,
             textStyle = TextStyle(fontSize = 14.sp)
         )
         override val behavior = AkariTextFieldBehavior(
@@ -50,9 +42,7 @@ sealed class AkariTextFieldVariant {
     }
 
     data object Password : AkariTextFieldVariant() {
-        override val style = AkariTextFieldStyle(
-            contentPadding = PaddingValues(16.dp)
-        )
+        override val style = AkariTextFieldStyle()
         override val behavior = AkariTextFieldBehavior(
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
@@ -64,10 +54,7 @@ sealed class AkariTextFieldVariant {
     }
 
     data object MultilineMessage : AkariTextFieldVariant() {
-        override val style = AkariTextFieldStyle(
-            contentPadding = PaddingValues(16.dp),
-            minHeightInnerTextField = 80.dp
-        )
+        override val style = AkariTextFieldStyle()
         override val behavior = AkariTextFieldBehavior(
             singleLine = false,
             minLines = 3,
