@@ -4,47 +4,32 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.Text
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import com.akari.uicomponents.textFields.internalConfig.AkariTextFieldTheme
+import com.akari.uicomponents.textFields.internalConfig.AkariTextFieldDefaults
 import com.akari.uicomponents.textFields.internalConfig.AkariTextFieldVisuals
 import com.akari.uicomponents.textFields.state.AkariTextFieldState
 
@@ -104,138 +89,112 @@ fun AkariTextField(
     val akariStyle = state.style
     val akariBehavior = state.behavior
 
-    val theme = AkariTextFieldTheme.Material
-
-    val visualState by remember{
-        derivedStateOf {
-            when{
-                state.isError -> AkariTextFieldVisuals.State.ERROR
-                isFocused -> AkariTextFieldVisuals.State.FOCUSED
-                !akariBehavior.enabled -> AkariTextFieldVisuals.State.DISABLED
-                else -> AkariTextFieldVisuals.State.UNFOCUSED
-            }
+    val visualState = remember( isFocused, state.isError, akariBehavior.enabled){
+        when {
+            state.isError -> AkariTextFieldVisuals.VisualState.ERROR
+            isFocused -> AkariTextFieldVisuals.VisualState.FOCUSED
+            !akariBehavior.enabled -> AkariTextFieldVisuals.VisualState.DISABLED
+            else -> AkariTextFieldVisuals.VisualState.UNFOCUSED
         }
     }
 
     // Defaults composables (si vienen nulos en state)
-    val colors = akariStyle.colors ?: theme.colors()
-    val cursorBrush: Brush = akariStyle.cursorBrush ?: theme.cursorBrush()
+    val colors = akariStyle.colors ?: AkariTextFieldDefaults.colors()
 
     val akariVisuals = remember(colors, visualState) {
         AkariTextFieldVisuals(colors, visualState)
     }
 
-    val shape = akariStyle.shape ?: theme.shape()
+    val shape = akariStyle.shape ?: AkariTextFieldDefaults.shape
     val textStyle = akariStyle.textStyle
-    val borderThickness = akariStyle.borderThickness ?: 0.dp
-
-    val borderColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.BORDER)
-
-    val backgroundColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.BACKGROUND)
-
     val textColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.TEXT)
-
-    val placeholderColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.PLACEHOLDER)
-
     val supportingTextColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.SUPPORTING)
+    val labelColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.LABEL)
+    val cursorColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.CURSOR)
+
+    val cursorBrush = akariStyle.cursorBrush?: SolidColor(cursorColor)
+
+    // Determinar si usar label interno o externo
+    val useInternalLabel = state.labelBehavior == AkariLabelBehavior.FLOATING
 
     Column(
-        modifier = modifier.semantics {
+        modifier = Modifier.semantics {
             if (state.isError) error(state.supportingText?.toString() ?: "")
         }
     ) {
-        state.label?.invoke()
-        // Contenedor visual
-        Box(
-            modifier = Modifier
-                .akariTextFieldContainer(
-                    shape = shape,
-                    backgroundColor = backgroundColor,
-                    borderThickness = borderThickness,
-                    borderColor = borderColor,
-                    minHeight = akariStyle.minHeightTextField,
-                    contentPadding = akariStyle.contentPadding
-                ),
-            contentAlignment = Alignment.CenterStart
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                // Icono inicial
-                state.leadingIcon?.invoke(isFocused)
-
-                // Prefijo
-                state.prefix?.invoke()
-
-                // TextField principal
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .defaultMinSize(minHeight = akariStyle.minHeightInnerTextField),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    this@Row.AnimatedVisibility(
-                        visible = state.value.text.isEmpty() && state.placeholder != null,
-                        enter = fadeIn(animationSpec = tween(150)),
-                        exit = fadeOut(animationSpec = tween(150))
+        if (!useInternalLabel) {
+            state.label?.let { label ->
+                Box(modifier = Modifier.padding(akariStyle.textFieldPadding.labelPadding)) {
+                    CompositionLocalProvider(
+                        LocalContentColor provides labelColor,
+                        LocalTextStyle provides textStyle.copy(color = labelColor)
                     ) {
-                        Text(
-                            text = state.placeholder.orEmpty(),
-                            color = placeholderColor,
-                            style = textStyle
-                        )
+                        label()
                     }
-                    BasicTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .focusRequester(focusRequester)
-                            .focusProperties(state.focusProperties)
-                            .onFocusChanged { focusState ->
-                                if (focusState.isFocused) {
-                                    if (akariBehavior.autoSelectOnFocus && !hasAutoSelected) {
-                                        state.onValueChange(
-                                            state.value.copy(
-                                                selection = TextRange(0, state.valueText.length)
-                                            )
-                                        )
-                                        hasAutoSelected = true
-                                    }
-                                } else {
-                                    hasAutoSelected = false
-                                }
-                            },
-                        value = state.value,
-                        onValueChange = state.onValueChange,
-                        interactionSource = interactionSource,
-                        enabled = akariBehavior.enabled,
-                        readOnly = akariBehavior.readOnly,
-                        textStyle = textStyle.copy(color = textColor),
-                        keyboardOptions = akariBehavior.keyboardOptions,
-                        keyboardActions = akariBehavior.keyboardActions,
-                        singleLine = akariBehavior.singleLine,
-                        maxLines = akariBehavior.maxLines,
-                        minLines = akariBehavior.minLines,
-                        visualTransformation = akariBehavior.visualTransformation,
-                        onTextLayout = state.onTextLayout,
-                        cursorBrush = cursorBrush,
-                    )
                 }
-
-                // Sufijo
-                state.suffix?.invoke()
-
-                // Icono final
-                state.trailingIcon?.invoke(isFocused)
             }
         }
 
-        // Texto de soporte o error
-        state.supportingText?.let { supportingText ->
-            Spacer(modifier = Modifier.height(4.dp))
-            CompositionLocalProvider(LocalContentColor provides supportingTextColor) {
-                supportingText()
+        CompositionLocalProvider(LocalTextSelectionColors provides colors.textSelectionColors) {
+            BasicTextField(
+                value = state.value,
+                onValueChange = state.onValueChange,
+                modifier = Modifier
+                    .focusRequester(focusRequester)
+                    .focusProperties(state.focusProperties)
+                    .onFocusChanged { focusState ->
+                        if (focusState.isFocused) {
+                            if (akariBehavior.autoSelectOnFocus && !hasAutoSelected) {
+                                state.onValueChange(
+                                    state.value.copy(
+                                        selection = TextRange(0, state.valueText.length)
+                                    )
+                                )
+                                hasAutoSelected = true
+                            }
+                        } else {
+                            hasAutoSelected = false
+                        }
+                    },
+                interactionSource = interactionSource,
+                enabled = akariBehavior.enabled,
+                readOnly = akariBehavior.readOnly,
+                textStyle = textStyle.copy(color = textColor),
+                keyboardOptions = akariBehavior.keyboardOptions,
+                keyboardActions = akariBehavior.keyboardActions,
+                singleLine = akariBehavior.singleLine,
+                maxLines = akariBehavior.maxLines,
+                minLines = akariBehavior.minLines,
+                visualTransformation = akariBehavior.visualTransformation,
+                onTextLayout = state.onTextLayout,
+                cursorBrush = cursorBrush,
+                decorationBox = { innerTextField ->
+                    AkariTextFieldDefaults.DecorationBox(
+                        modifier = modifier,
+                        innerTextField = innerTextField,
+                        state = state,
+                        isFocused = isFocused,
+                        akariVisuals = akariVisuals,
+                        shape = shape,
+                        textStyle = textStyle,
+                        useInternalLabel = useInternalLabel
+                    )
+                }
+            )
+        }
+
+        AnimatedVisibility(
+            visible = state.value.text.isEmpty() && state.placeholder != null,
+            enter = fadeIn(animationSpec = tween(150)),
+            exit = fadeOut(animationSpec = tween(150))
+        ) {
+            // Texto de soporte o error
+            state.supportingText?.let { supportingText ->
+                Box(modifier = Modifier.padding(akariStyle.textFieldPadding.supportingTextPadding)){
+                    CompositionLocalProvider(LocalContentColor provides supportingTextColor) {
+                        supportingText()
+                    }
+                }
             }
         }
     }
@@ -246,17 +205,3 @@ fun AkariTextField(
         }
     }
 }
-
-private fun Modifier.akariTextFieldContainer(
-    shape: Shape,
-    backgroundColor: Color,
-    borderThickness: Dp,
-    borderColor: Color,
-    minHeight: Dp,
-    contentPadding: PaddingValues
-) = this
-    .clip(shape)
-    .background(backgroundColor)
-    .border(width = borderThickness, color = borderColor, shape = shape)
-    .heightIn(min = minHeight)
-    .padding(contentPadding)
