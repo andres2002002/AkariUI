@@ -106,7 +106,7 @@ fun AkariTextField(
     }
 
     val shape = akariStyle.shape ?: AkariTextFieldDefaults.shape
-    val textStyle = akariStyle.textStyle
+    val textStyle = akariStyle.textStyle?: AkariTextFieldDefaults.textStyle
     val textColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.TEXT)
     val supportingTextColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.SUPPORTING)
     val labelColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.LABEL)
@@ -118,9 +118,9 @@ fun AkariTextField(
     val useInternalLabel = state.labelBehavior == AkariLabelBehavior.FLOATING
 
     Column(
-        modifier = Modifier.semantics {
-            if (state.isError) error(state.supportingText?.toString() ?: "")
-        }
+        modifier = Modifier
+            .semantics { if (state.isError) error(state.supportingText?.toString() ?: "") }
+            .padding(akariStyle.textFieldPadding.externalContentPadding)
     ) {
         if (!useInternalLabel) {
             state.label?.let { label ->
@@ -135,7 +135,10 @@ fun AkariTextField(
             }
         }
 
-        CompositionLocalProvider(LocalTextSelectionColors provides colors.textSelectionColors) {
+        CompositionLocalProvider(
+            LocalTextSelectionColors provides colors.textSelectionColors,
+            LocalTextStyle provides textStyle.copy(color = textColor)
+        ) {
             BasicTextField(
                 value = state.value,
                 onValueChange = state.onValueChange,
@@ -176,7 +179,6 @@ fun AkariTextField(
                         isFocused = isFocused,
                         akariVisuals = akariVisuals,
                         shape = shape,
-                        textStyle = textStyle,
                         useInternalLabel = useInternalLabel
                     )
                 }

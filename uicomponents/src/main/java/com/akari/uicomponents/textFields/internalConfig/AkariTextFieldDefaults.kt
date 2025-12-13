@@ -1,9 +1,13 @@
 package com.akari.uicomponents.textFields.internalConfig
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -14,8 +18,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +28,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,10 +39,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.round
 import androidx.compose.ui.zIndex
 import com.akari.uicomponents.textFields.AkariTextFieldStyle
 import com.akari.uicomponents.textFields.state.AkariTextFieldState
@@ -59,6 +68,9 @@ object AkariTextFieldDefaults {
     /** Default shape for an [AkariTextField]. */
     val shape: Shape
         @Composable get() = OutlinedTextFieldDefaults.shape
+    /** Default text style for an [AkariTextField]. */
+    val textStyle: TextStyle
+        @Composable get() = LocalTextStyle.current
 
     /**
      * The default min height applied to an [AkariTextField]. Note that you can override it by
@@ -80,6 +92,11 @@ object AkariTextFieldDefaults {
 
     @Composable fun colors() = OutlinedTextFieldDefaults.colors()
 
+    // Specs de animación reutilizables (constantes en memoria)
+    private val LabelAnimationSpec = tween<Float>(250)
+    private val OffsetAnimationSpec = tween<Dp>(150)
+    private val FadeAnimationSpec = tween<Float>(150)
+
     /**
      * The default implementation of the decoration box for an [AkariTextField].
      *
@@ -95,8 +112,6 @@ object AkariTextFieldDefaults {
      * @param akariVisuals An instance of [AkariTextFieldVisuals] that provides the dynamic
      *   colors for the different parts of the text field.
      * @param shape The shape of the text field's container.
-     * @param textStyle The [androidx.compose.ui.text.TextStyle] to be applied to the input text and used
-     *   as a base for the label.
      * @param useInternalLabel A boolean that determines whether to use the built-in floating
      *   label implementation. If `false`, the label is expected to be handled externally.
      */
@@ -108,13 +123,15 @@ object AkariTextFieldDefaults {
         isFocused: Boolean,
         akariVisuals: AkariTextFieldVisuals,
         shape: Shape,
-        textStyle: androidx.compose.ui.text.TextStyle,
         useInternalLabel: Boolean
     ) {
         val akariStyle = state.style
         val borderThickness = remember(isFocused, akariStyle) {
-            if (isFocused) akariStyle.focusedBorderThickness ?: FocusedBorderThickness
-            else akariStyle.unfocusedBorderThickness ?: UnfocusedBorderThickness
+            if (isFocused) {
+                akariStyle.focusedBorderThickness ?: FocusedBorderThickness
+            } else {
+                akariStyle.unfocusedBorderThickness ?: UnfocusedBorderThickness
+            }
         }
 
         val borderColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.BORDER)
@@ -127,32 +144,27 @@ object AkariTextFieldDefaults {
         val prefixColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.PREFIX)
         val suffixColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.SUFFIX)
 
-        val isLabelFloating = remember(isFocused, state.value.text) {
-            isFocused || state.value.text.isNotEmpty()
-        }
-        // Animación del label con spec compartida
-        val labelAnimationSpec = remember { tween<Float>(250) }
-        val labelScale by animateFloatAsState(
-            targetValue = if (isLabelFloating) 0.75f else 1f,
-            animationSpec = labelAnimationSpec,
-            label = "labelScale"
-        )
+        val isLabelFloating = isFocused || state.value.text.isNotEmpty()
 
-        // Modifier del container calculado una sola vez
-        val containerModifier = remember(
-            shape, backgroundColor, borderThickness, borderColor, akariStyle.textFieldPadding
-        ) {
-            Modifier
-                .zIndex(0f)
-                .clip(shape)
-                .background(backgroundColor)
-                .border(width = borderThickness, color = borderColor, shape = shape)
-                .padding(akariStyle.textFieldPadding.contentPadding)
-                .defaultMinSize(minWidth = MinWidth, minHeight = MinHeight)
-        }
+        // Coordenadas para posicionamiento preciso
+        var containerOffset by remember { mutableStateOf(IntOffset.Zero) }
+        var textFieldContentOffset by remember { mutableStateOf(IntOffset.Zero) }
+        var textFieldContentSize by remember { mutableStateOf(IntSize.Zero) }
+
+        val containerModifier = Modifier
+            .zIndex(0f)
+            .clip(shape)
+            .background(backgroundColor)
+            .border(width = borderThickness, color = borderColor, shape = shape)
+            .padding(akariStyle.textFieldPadding.contentPadding)
+            .defaultMinSize(minWidth = MinWidth, minHeight = MinHeight)
+
 
         Box(
             modifier = Modifier
+                .onGloballyPositioned { coordinates ->
+                    containerOffset = coordinates.positionInParent().round()
+                }
         ) {
             // Label interno flotante
             if (useInternalLabel && state.label != null) {
@@ -161,9 +173,10 @@ object AkariTextFieldDefaults {
                     akariStyle = akariStyle,
                     labelColor = labelColor,
                     containerColor = backgroundColor,
-                    textStyle = textStyle,
-                    labelScale = labelScale,
-                    isFloating = isLabelFloating
+                    isFloating = isLabelFloating,
+                    containerOffset = containerOffset,
+                    textFieldContentOffset = textFieldContentOffset,
+                    textFieldContentSize = textFieldContentSize
                 )
             }
             Box(
@@ -194,28 +207,29 @@ object AkariTextFieldDefaults {
                     // Text field content
                     Box(
                         modifier = Modifier
-                            .padding(akariStyle.textFieldPadding.mainContentPadding),
+                            .padding(akariStyle.textFieldPadding.mainContentPadding)
+                            .onGloballyPositioned { coordinates ->
+                                textFieldContentOffset = coordinates.positionInParent().round()
+                                textFieldContentSize = coordinates.size
+                            },
                         contentAlignment = Alignment.CenterStart
                     ) {
                         // Placeholder
-                        val showPlaceholder by remember {
-                            derivedStateOf {
-                                state.value.text.isEmpty() &&
-                                        state.placeholder != null &&
-                                        (!useInternalLabel || isLabelFloating)
-                            }
-                        }
+                        val showPlaceholder  = state.value.text.isEmpty() &&
+                                (!useInternalLabel || isLabelFloating)
 
-                        if (showPlaceholder) {
-                            this@Row.AnimatedVisibility(
-                                visible = state.value.text.isEmpty() && state.placeholder != null,
-                                enter = fadeIn(animationSpec = tween(150)),
-                                exit = fadeOut(animationSpec = tween(150))
-                            ) {
-                                state.placeholder?.let { placeholder ->
-                                    CompositionLocalProvider(LocalContentColor provides placeholderColor) {
-                                        placeholder()
-                                    }
+                        val placeholderAlpha by animateFloatAsState(
+                            if (showPlaceholder) 1f else 0f,
+                            animationSpec = FadeAnimationSpec,
+                            label = "placeholderAlpha"
+                        )
+
+                        if (state.placeholder != null && placeholderAlpha > 0f) {
+                            Box(Modifier.graphicsLayer { alpha = placeholderAlpha }) {
+                                CompositionLocalProvider(
+                                    LocalContentColor provides placeholderColor,
+                                ) {
+                                    state.placeholder()
                                 }
                             }
                         }
@@ -255,7 +269,9 @@ object AkariTextFieldDefaults {
         padding: PaddingValues,
         content: @Composable () -> Unit
     ) {
-        CompositionLocalProvider(LocalContentColor provides color) {
+        CompositionLocalProvider(
+            LocalContentColor provides color
+        ) {
             Box(modifier = Modifier.padding(padding)) {
                 content()
             }
@@ -268,7 +284,9 @@ object AkariTextFieldDefaults {
         padding: PaddingValues,
         content: @Composable () -> Unit
     ) {
-        CompositionLocalProvider(LocalContentColor provides color) {
+        CompositionLocalProvider(
+            LocalContentColor provides color,
+        ) {
             Box(modifier = Modifier.padding(padding)) {
                 content()
             }
@@ -281,74 +299,91 @@ object AkariTextFieldDefaults {
         akariStyle: AkariTextFieldStyle,
         labelColor: Color,
         containerColor: Color,
-        textStyle: androidx.compose.ui.text.TextStyle,
-        labelScale: Float,
-        isFloating: Boolean
+        isFloating: Boolean,
+        containerOffset: IntOffset,
+        textFieldContentOffset: IntOffset,
+        textFieldContentSize: IntSize
     ) {
         val colorScheme = MaterialTheme.colorScheme
-        var textFieldHeight by remember { mutableStateOf(0.dp) }
+        var labelHeight by remember { mutableIntStateOf(0) }
         val density = LocalDensity.current
 
-        // Calcular target solo cuando cambien las dependencias
-        val target = remember(textFieldHeight, akariStyle.textFieldPadding) {
-            (textFieldHeight + akariStyle.textFieldPadding.contentPadding.calculateTopPadding()) / 2
+        val transition = updateTransition(
+            targetState = isFloating,
+            label = "LabelTransition"
+        )
+
+        val targetX = with(density) {
+            if (isFloating) 0.dp
+            else (textFieldContentOffset.x - containerOffset.x).toDp()
         }
 
-        val offsetAnimationSpec = remember { tween<Dp>(150) }
+        val targetY = with(density) {
+            if (isFloating) {
+                val totalHeight = textFieldContentSize.height +
+                        akariStyle.textFieldPadding.contentPadding.calculateTopPadding().toPx() +
+                        akariStyle.textFieldPadding.contentPadding.calculateBottomPadding().toPx()
+                -(totalHeight / 2).toInt().toDp()
+            } else {
+                val textFieldCenterY = textFieldContentOffset.y - containerOffset.y +
+                        (textFieldContentSize.height / 2)
+                val labelCenterY = labelHeight / 2
+                (textFieldCenterY - labelCenterY).toDp()
+            }
+        }
         val offsetY by animateDpAsState(
-            targetValue = if (isFloating) -target else 0.dp,
-            animationSpec = offsetAnimationSpec,
+            targetValue = targetY,
+            animationSpec = OffsetAnimationSpec,
             label = "labelOffsetY"
         )
-        val isInvisible = remember(containerColor) {
-            containerColor == Color.Transparent || containerColor.alpha < 0.2f
+
+        val offsetX by animateDpAsState(
+            targetValue = targetX,
+            animationSpec = OffsetAnimationSpec,
+            label = "labelOffsetX"
+        )
+
+        val labelScale by transition.animateFloat(
+            transitionSpec = { LabelAnimationSpec },
+            label = "labelScale"
+        ) { isFloating ->
+            if (isFloating) 0.75f else 1f
         }
+
+        val isInvisible = containerColor == Color.Transparent || containerColor.alpha < 0.2f
+
 
         val shape = MaterialTheme.shapes.extraSmall
 
         // Modifier base del label
-        val labelModifier = remember(
-            offsetY, labelScale, akariStyle.textFieldPadding, density, textFieldHeight
-        ) {
-            Modifier
-                .zIndex(1f)
-                .offset(y = offsetY)
-                .padding(akariStyle.textFieldPadding.contentPadding)
-                .graphicsLayer {
-                    scaleX = labelScale
-                    scaleY = labelScale
-                    transformOrigin = TransformOrigin(0f, 0.0f)
-                }
-        }
+        val labelModifier = Modifier
+            .zIndex(1f)
+            .offset(x = offsetX, y = offsetY)
+            .padding(akariStyle.textFieldPadding.contentPadding)
+            .graphicsLayer {
+                scaleX = labelScale
+                scaleY = labelScale
+                transformOrigin = TransformOrigin(0f, 0f)
+            }
         Box(
             modifier = labelModifier.onSizeChanged { size ->
-                textFieldHeight = with(density) { size.height.toDp() }
+                labelHeight  = size.height
             }
         ) {
-            val effectiveLabelColor = remember(labelColor) { labelColor }
-            val effectiveTextStyle = remember(textStyle, labelColor) {
-                textStyle.copy(color = labelColor)
-            }
 
             CompositionLocalProvider(
-                LocalContentColor provides effectiveLabelColor,
-                LocalTextStyle provides effectiveTextStyle
+                LocalContentColor provides labelColor
             ) {
-                val backgroundModifier = remember(isInvisible, containerColor, isFloating, akariStyle) {
-                    Modifier
-                        .clip(shape)
-                        .background(
-                            if (isInvisible) colorScheme.surface
-                            else containerColor
-                        )
-                        .then(
-                            if (isFloating) {
-                                Modifier.padding(akariStyle.textFieldPadding.labelPadding)
-                            } else {
-                                Modifier
-                            }
-                        )
-                }
+                val backgroundModifier = Modifier
+                    .clip(shape)
+                    .background(if (isInvisible) colorScheme.surface else containerColor)
+                    .then(
+                        if (isFloating) {
+                            Modifier.padding(akariStyle.textFieldPadding.labelPadding)
+                        } else {
+                            Modifier
+                        }
+                    )
 
                 Box(modifier = backgroundModifier) {
                     label()

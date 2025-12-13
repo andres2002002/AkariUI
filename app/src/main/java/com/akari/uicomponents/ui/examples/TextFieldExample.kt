@@ -36,14 +36,18 @@ fun TextFieldExample(){
     val focusManager = LocalFocusManager.current
     val firsFocusRequester = remember { FocusRequester() }
     val shapes = MaterialTheme.shapes
+    val typography = MaterialTheme.typography
     val state: AkariTextFieldState = rememberAkariTextFieldState(
         value = value,
         onValueChange = { value = it },
         builder = {
             label = {
-                Text(text = "Label")
+                Text(
+                    text = "Label",
+                    style = typography.labelMedium
+                )
             }
-            labelBehavior = AkariLabelBehavior.FLOATING
+            labelBehavior = AkariLabelBehavior.EXTERNAL
             placeholder = {Text("Placeholder")}
             leadingIcon = {
                 Icon(
@@ -57,6 +61,7 @@ fun TextFieldExample(){
             }
             style {
                 shape = shapes.large
+                textStyle = typography.titleLarge
             }
             behavior {
                 autoSelectOnFocus = true
@@ -71,7 +76,7 @@ fun TextFieldExample(){
         }
     )
     Box(
-        modifier = Modifier.size(300.dp),
+        modifier = Modifier,
         contentAlignment = Alignment.Center
     ){
         AkariTextField(

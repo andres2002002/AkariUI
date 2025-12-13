@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
  * @property cursorBrush The [androidx.compose.ui.graphics.Brush] to be used for painting the cursor. Defaults to a solid black color.
  */
 class AkariTextFieldStyle (
-    var textStyle: TextStyle = TextStyle.Default,
+    var textStyle: TextStyle? = null,
     var textFieldPadding: AkariTextFieldPadding = AkariTextFieldPadding(),
     var shape: Shape? = null,
     var focusedBorderThickness: Dp? = null,
