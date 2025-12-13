@@ -22,11 +22,11 @@ import androidx.compose.ui.unit.dp
  */
 class AkariTextFieldPadding (
     var contentPadding: PaddingValues = PaddingValues(vertical = 8.dp, horizontal = 16.dp),
-    var leadingIconPadding: PaddingValues = PaddingValues(start = 8.dp, end = 4.dp),
-    var trailingIconPadding: PaddingValues = PaddingValues(end = 8.dp, start = 4.dp),
+    var leadingIconPadding: PaddingValues = PaddingValues(end = 4.dp),
+    var trailingIconPadding: PaddingValues = PaddingValues(start = 4.dp),
     var supportingTextPadding: PaddingValues = PaddingValues(start = 16.dp, end = 16.dp),
-    var prefixPadding: PaddingValues = PaddingValues(start = 8.dp, end = 4.dp),
-    var suffixPadding: PaddingValues = PaddingValues(end = 8.dp, start = 4.dp),
+    var prefixPadding: PaddingValues = PaddingValues(end = 4.dp),
+    var suffixPadding: PaddingValues = PaddingValues(start = 4.dp),
     var labelPadding: PaddingValues = PaddingValues(vertical = 4.dp, horizontal = 4.dp),
     var mainContentPadding: PaddingValues = PaddingValues(all = 0.dp)
 )

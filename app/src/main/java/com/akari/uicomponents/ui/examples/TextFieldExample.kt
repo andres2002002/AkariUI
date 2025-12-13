@@ -1,9 +1,13 @@
 package com.akari.uicomponents.ui.examples
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -11,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalFocusManager
@@ -40,6 +45,12 @@ fun TextFieldExample(){
             }
             labelBehavior = AkariLabelBehavior.FLOATING
             placeholder = {Text("Placeholder")}
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search",
+                )
+            }
             focusRequester = firsFocusRequester
             variant {
                 AkariTextFieldVariant.Outlined
@@ -59,8 +70,13 @@ fun TextFieldExample(){
             }
         }
     )
-    AkariTextField(
-        state = state,
-        modifier = Modifier.height(80.dp)
-    )
+    Box(
+        modifier = Modifier.size(300.dp),
+        contentAlignment = Alignment.Center
+    ){
+        AkariTextField(
+            state = state,
+            modifier = Modifier.height(80.dp)
+        )
+    }
 }
