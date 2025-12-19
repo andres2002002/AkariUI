@@ -44,10 +44,10 @@ fun TextFieldExample(){
             label = {
                 Text(
                     text = "Label",
-                    style = typography.labelMedium
+                    style = typography.labelLarge
                 )
             }
-            labelBehavior = AkariLabelBehavior.EXTERNAL
+            labelBehavior = AkariLabelBehavior.FLOATING
             placeholder = {Text("Placeholder")}
             leadingIcon = {
                 Icon(
@@ -60,7 +60,7 @@ fun TextFieldExample(){
                 AkariTextFieldVariant.Outlined
             }
             style {
-                shape = shapes.large
+                shape = shapes.extraSmall
                 textStyle = typography.titleLarge
             }
             behavior {
@@ -75,13 +75,9 @@ fun TextFieldExample(){
             }
         }
     )
-    Box(
-        modifier = Modifier,
-        contentAlignment = Alignment.Center
-    ){
-        AkariTextField(
-            state = state,
-            modifier = Modifier.height(80.dp)
-        )
-    }
+
+    AkariTextField(
+        state = state,
+        modifier = Modifier
+    )
 }
