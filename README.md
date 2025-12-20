@@ -79,18 +79,179 @@ repositories {
 
 ```kotlin
 dependencies {
-    implementation("com.akari:uicomponents:1.0.0")
+    implementation("com.akari:uicomponents:1.1.31")
 }
 ```
 
 ### 4. Use the components
 
+AkariTextField example:
 ```kotlin
-AkariTextField(
-    value = text,
-    onValueChange = { text = it },
-    label = "Name",
-)
+@Composable
+fun TextFieldExample() {
+    var value by remember { mutableStateOf(TextFieldValue("")) }
+    val focusManager = LocalFocusManager.current
+    val firsFocusRequester = remember { FocusRequester() }
+    val shapes = MaterialTheme.shapes
+    val typography = MaterialTheme.typography
+    val config: AkariTextFieldConfig = rememberAkariTextFieldConfig {
+        slots {
+            label = {
+                Text(
+                    text = "Label",
+                    style = typography.labelLarge
+                )
+            }
+            placeholder = { Text("Placeholder") }
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search",
+                )
+            }
+        }
+        style {
+            shape = shapes.extraSmall
+            textStyle = typography.titleLarge
+        }
+        behavior {
+            autoSelectOnFocus = true
+            labelBehavior = AkariLabelBehavior.FLOATING
+            keyboardActions = KeyboardActions {
+                focusManager.clearFocus()
+            }
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Send
+            )
+        }
+    }
+
+    AkariTextField(
+        value = value,
+        onValueChange = { value = it },
+        config = config,
+        focusRequester = firsFocusRequester
+    )
+}
+```
+
+AkariCheckBox example:
+```kotlin
+@Composable
+fun CheckBoxExample(){
+    var checked by remember { mutableStateOf(false) }
+    AkariCheckBox(
+        modifier = Modifier.padding(32.dp),
+        checked = checked,
+        onCheckedChange = { checked = it },
+        shape = MaterialTheme.shapes.small,
+        iconSelected = {
+            Icon(Icons.Filled.Check, contentDescription = null, tint = MaterialTheme.colorScheme.background)
+        }
+    )
+}
+```
+
+AkariTooltipButton example:
+```kotlin
+@Composable
+fun TooltipButtonExample(){
+    val shapes = MaterialTheme.shapes
+    val colors = MaterialTheme.colorScheme
+    AkariTooltipButton(
+        variant = AkariButtonVariant.Filled,
+        onClick = {},
+        buttonConfig = AkariButtonConfig {
+            shape = shapes.extraSmall
+            border = BorderStroke(width = 3.dp, color = colors.tertiaryContainer)
+        },
+        tooltipContent = {
+            Text(text = "Tooltip Example")
+        }
+    ){
+        Text(text = "Hello World")
+    }
+}
+```
+
+AkariReorderableLazyColumn example:
+```kotlin
+@Composable
+fun DragAndDropExample() {
+    val items = remember {
+        mutableStateListOf("Akari", "Compose", "Hilt", "Room", "Navigation", "Python")
+    }
+
+    val reorderState = rememberAkariReorderableLazyState<String>{ from, to ->
+        items.apply { add(to, removeAt(from)) }
+    }
+
+    AkariReorderableLazyColumn(
+        items = items,
+        state = reorderState,
+        reorderingEnabled = true,  // false para deshabilitar
+        dragActivation = DragActivation.LongPress,
+        key = { it }
+    ) { item, isDragging ->
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = if (isDragging) Color.Gray.copy(alpha = 0.3f)
+                else Color.DarkGray
+            )
+        ) {
+            Icon(
+                modifier = Modifier.akariDragHandle(),
+                imageVector = Icons.Default.DragHandle, contentDescription = null)
+            Text(
+                text = item,
+                modifier = Modifier.padding(16.dp),
+                color = Color.White
+            )
+        }
+    }
+}
+```
+
+AkariReorderableColumn example:
+```kotlin
+@Composable
+fun DragDropColumnExample() {
+    val items = remember {
+        mutableStateListOf("Akari", "Compose", "Hilt", "Room", "Navigation", "Python")
+    }
+
+    val reorderState = rememberAkariReorderableColumnState<String> { from, to ->
+        items.apply { add(to, removeAt(from)) }
+    }
+
+    AkariReorderableColumn(
+        items = items,
+        state = reorderState
+    ) { item, isDragging ->
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = if (isDragging) Color.Gray.copy(alpha = 0.25f)
+                else Color.DarkGray
+            )
+        ) {
+            Icon(
+                modifier = Modifier.akariDragHandle(),
+                imageVector = Icons.Default.DragHandle, contentDescription = null
+            )
+            Text(
+                modifier = Modifier.padding(16.dp),
+                text = item,
+                color = Color.White
+            )
+        }
+    }
+}
 ```
 
 ---
