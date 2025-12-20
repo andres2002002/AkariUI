@@ -1,8 +1,10 @@
-package com.akari.uicomponents.textFields
+package com.akari.uicomponents.textFields.config
 
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.text.input.VisualTransformation
+import com.akari.uicomponents.textFields.AkariLabelBehavior
 
 /**
  * Defines the behavior and interaction configuration for an Akari text field.
@@ -28,25 +30,19 @@ import androidx.compose.ui.text.input.VisualTransformation
  * @param visualTransformation Transforms the visual representation of the input text, such as for
  *                             password fields.
  */
-class AkariTextFieldBehavior(
-    var enabled: Boolean = true,
-    var readOnly: Boolean = false,
-    var singleLine: Boolean = false,
-    var maxLines: Int = Int.MAX_VALUE,
-    var minLines: Int = 1,
-    var autoSelectOnFocus: Boolean = false,
-    var requestFocus: Boolean = false,
-    var keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    var keyboardActions: KeyboardActions = KeyboardActions.Default,
-    var visualTransformation: VisualTransformation = VisualTransformation.None
+@Immutable
+data class AkariTextFieldBehavior(
+    val labelBehavior: AkariLabelBehavior = AkariLabelBehavior.FLOATING,
+    val readOnly: Boolean = false,
+    val singleLine: Boolean = false,
+    val maxLines: Int = Int.MAX_VALUE,
+    val minLines: Int = 1,
+    val autoSelectOnFocus: Boolean = false,
+    val requestFocus: Boolean = false,
+    val keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    val keyboardActions: KeyboardActions = KeyboardActions.Default,
+    val visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
-    fun validateValues(){
-        if (singleLine) {
-            minLines = 1
-            maxLines = 1
-        }
-        if (minLines <= 0) minLines = 1
-        if (maxLines <= 0) maxLines = minLines
-        if (minLines > maxLines) maxLines = minLines
-    }
+    val normalizedMinLines: Int get() = if (singleLine) 1 else minLines.coerceAtLeast(1)
+    val normalizedMaxLines: Int get() = if (singleLine) 1 else maxLines.coerceAtLeast(normalizedMinLines)
 }

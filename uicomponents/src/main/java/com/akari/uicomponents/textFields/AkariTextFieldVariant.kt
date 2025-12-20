@@ -1,19 +1,14 @@
 package com.akari.uicomponents.textFields
 
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.akari.uicomponents.textFields.AkariTextFieldBehavior
-import com.akari.uicomponents.textFields.AkariTextFieldStyle
+import com.akari.uicomponents.textFields.config.AkariTextFieldBehavior
+import com.akari.uicomponents.textFields.config.AkariTextFieldStyle
 
 sealed class AkariTextFieldVariant {
     abstract val style: AkariTextFieldStyle
@@ -30,9 +25,7 @@ sealed class AkariTextFieldVariant {
     }
 
     data object Search : AkariTextFieldVariant() {
-        override val style = AkariTextFieldStyle(
-            textStyle = TextStyle(fontSize = 14.sp)
-        )
+        override val style = AkariTextFieldStyle()
         override val behavior = AkariTextFieldBehavior(
             singleLine = true,
             keyboardOptions = KeyboardOptions(
