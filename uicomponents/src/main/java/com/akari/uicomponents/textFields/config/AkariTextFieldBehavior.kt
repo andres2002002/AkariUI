@@ -11,9 +11,7 @@ import com.akari.uicomponents.textFields.AkariLabelBehavior
  *
  * This data class encapsulates various behavioral properties that control how a text field functions,
  * such as its enabled state, keyboard options, and line limits.
- *
- * @param enabled Controls the enabled state of the text field. When `false`, the text field cannot be
- *                focused or edited.
+
  * @param readOnly Controls the editable state of the text field. When `true`, the text field can be
  *                 focused and its content can be selected, but it cannot be modified.
  * @param singleLine When `true`, this text field becomes a single horizontally scrolling text field
