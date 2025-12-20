@@ -28,72 +28,86 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
+import com.akari.uicomponents.textFields.config.AkariTextFieldConfig
 import com.akari.uicomponents.textFields.internalConfig.AkariTextFieldDefaults
 import com.akari.uicomponents.textFields.internalConfig.AkariTextFieldVisuals
-import com.akari.uicomponents.textFields.state.AkariTextFieldState
 
 /**
  * A highly customizable text field component for the Akari design system.
  *
- * This composable provides a foundational text input field that can be extensively configured
- * through the [AkariTextFieldState]. It handles various visual states (focused, unfocused,
- * disabled, error), animations, and integrates seamlessly with icons, prefixes, suffixes,
- * and supporting text.
+ * This composable provides a robust text input field that can be extensively configured
+ * through the [AkariTextFieldConfig]. It handles various visual states (focused, unfocused,
+ * disabled, error), animations, and integrates seamlessly with labels, placeholders,
+ * suffixes, prefixes, and supporting text.
  *
- * The behavior and appearance are almost entirely controlled by the [state] parameter,
- * promoting a declarative and state-driven UI approach.
+ * The behavior and appearance are driven by the explicit parameters passed to the composable
+ * (such as [value], [onValueChange], [isError]) and the structured [config] object.
  *
  * Example usage:
  * ```
- * var value by remember { mutableStateOf(TextFieldValue(name)) }
- * val focusManager = LocalFocusManager.current
- * val firsFocusRequester = remember { FocusRequester() }
- * val shapes = MaterialTheme.shapes
- * val textFieldState = rememberAkariTextFieldState(
+ * var value by remember { mutableStateOf(TextFieldValue("")) }
+ * val focusRequester = remember { FocusRequester() }
+ *
+ * AkariTextField(
  *     value = value,
  *     onValueChange = { value = it },
- *     builder = {
- *        placeholder = "Enter your name"
- *        isError = text.length < 3
- *        style {
- *             shape = shapes.large
- *        }
- *        supportingText = { if (isError) Text("Name is too short") }
- *     }
+ *     isError = value.text.length < 3,
+ *     config = AkariTextFieldConfig(
+ *         style = AkariStyleConfig(
+ *             shape = RoundedCornerShape(8.dp)
+ *         ),
+ *         slots = AkariSlots(
+ *             placeholder = { Text("Enter your name") },
+ *             supportingText = { if (value.text.length < 3) Text("Name is too short") }
+ *         ),
+ *         behavior = AkariBehaviorConfig(
+ *             autoSelectOnFocus = true
+ *         )
+ *     ),
+ *     focusRequester = focusRequester
  * )
- *
- * AkariTextField(state = textFieldState)
  * ```
  *
- * @param modifier The [Modifier] to be applied to the text field layout.
- * @param state The [AkariTextFieldState] that holds all the configuration and state
- *              for this text field, including its value, styling, and behavior.
- *              Use `rememberAkariTextFieldState` to create and remember an instance of this state.
+ * @param modifier The [Modifier] to be applied to the decoration box surrounding the text field content.
+ * @param value The input [TextFieldValue] to be shown in the text field.
+ * @param onValueChange The callback invoked when the input [TextFieldValue] changes.
+ * @param isError Whether the text field is in an error state.
+ * @param enabled Whether the text field is enabled.
+ * @param config The [AkariTextFieldConfig] for the text field.
+ * @param focusRequester The [FocusRequester] to be applied to the text field.
+ * @param onTextLayout The callback invoked when the text layout occurs.
  *
- * @see AkariTextFieldState
- * @see com.akari.uicomponents.textFields.rememberAkariTextFieldState
  */
 @Composable
 fun AkariTextField(
     modifier: Modifier = Modifier,
-    state: AkariTextFieldState,
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit = {},
+    isError: Boolean = false,
+    enabled: Boolean = true,
+    config: AkariTextFieldConfig = AkariTextFieldConfig(),
+    focusRequester: FocusRequester = remember { FocusRequester() },
+    onTextLayout: (TextLayoutResult) -> Unit  = {}
 ) {
-    val focusRequester = state.focusRequester ?: remember { FocusRequester() }
 
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
     var hasAutoSelected by rememberSaveable { mutableStateOf(false) }
 
-    val akariStyle = state.style
-    val akariBehavior = state.behavior
+    val akariStyle = config.style
+    val akariBehavior = config.behavior
+    val akariPadding = config.padding
+    val akariSlots = config.slots
 
-    val visualState = remember( isFocused, state.isError, akariBehavior.enabled){
+    val visualState = remember( isFocused, isError, enabled){
         when {
-            state.isError -> AkariTextFieldVisuals.VisualState.ERROR
+            isError -> AkariTextFieldVisuals.VisualState.ERROR
             isFocused -> AkariTextFieldVisuals.VisualState.FOCUSED
-            !akariBehavior.enabled -> AkariTextFieldVisuals.VisualState.DISABLED
+            !enabled -> AkariTextFieldVisuals.VisualState.DISABLED
             else -> AkariTextFieldVisuals.VisualState.UNFOCUSED
         }
     }
@@ -115,16 +129,16 @@ fun AkariTextField(
     val cursorBrush = akariStyle.cursorBrush?: SolidColor(cursorColor)
 
     // Determinar si usar label interno o externo
-    val useInternalLabel = state.labelBehavior == AkariLabelBehavior.FLOATING
+    val useInternalLabel = akariBehavior.labelBehavior == AkariLabelBehavior.FLOATING
 
     Column(
         modifier = Modifier
-            .semantics { if (state.isError) error(state.supportingText?.toString() ?: "") }
-            .padding(akariStyle.textFieldPadding.externalContentPadding)
+            .semantics { if (isError) error(akariSlots.supportingText?.toString() ?: "") }
+            .padding(akariPadding.externalContent)
     ) {
         if (!useInternalLabel) {
-            state.label?.let { label ->
-                Box(modifier = Modifier.padding(akariStyle.textFieldPadding.labelPadding)) {
+            akariSlots.label?.let { label ->
+                Box(modifier = Modifier.padding(akariPadding.label)) {
                     CompositionLocalProvider(
                         LocalContentColor provides labelColor,
                         LocalTextStyle provides textStyle.copy(color = labelColor)
@@ -140,17 +154,17 @@ fun AkariTextField(
             LocalTextStyle provides textStyle.copy(color = textColor)
         ) {
             BasicTextField(
-                value = state.value,
-                onValueChange = state.onValueChange,
+                value = value,
+                onValueChange = onValueChange,
                 modifier = Modifier
                     .focusRequester(focusRequester)
-                    .focusProperties(state.focusProperties)
+                    .focusProperties(config.focusProperties)
                     .onFocusChanged { focusState ->
                         if (focusState.isFocused) {
                             if (akariBehavior.autoSelectOnFocus && !hasAutoSelected) {
-                                state.onValueChange(
-                                    state.value.copy(
-                                        selection = TextRange(0, state.valueText.length)
+                                onValueChange(
+                                    value.copy(
+                                        selection = TextRange(0, value.text.length)
                                     )
                                 )
                                 hasAutoSelected = true
@@ -160,22 +174,23 @@ fun AkariTextField(
                         }
                     },
                 interactionSource = interactionSource,
-                enabled = akariBehavior.enabled,
+                enabled = enabled,
                 readOnly = akariBehavior.readOnly,
                 textStyle = textStyle.copy(color = textColor),
                 keyboardOptions = akariBehavior.keyboardOptions,
                 keyboardActions = akariBehavior.keyboardActions,
                 singleLine = akariBehavior.singleLine,
-                maxLines = akariBehavior.maxLines,
-                minLines = akariBehavior.minLines,
+                maxLines = akariBehavior.normalizedMaxLines,
+                minLines = akariBehavior.normalizedMinLines,
                 visualTransformation = akariBehavior.visualTransformation,
-                onTextLayout = state.onTextLayout,
+                onTextLayout = onTextLayout,
                 cursorBrush = cursorBrush,
                 decorationBox = { innerTextField ->
                     AkariTextFieldDefaults.DecorationBox(
                         modifier = modifier,
                         innerTextField = innerTextField,
-                        state = state,
+                        isTextEmpty = value.text.isEmpty(),
+                        config = config,
                         isFocused = isFocused,
                         akariVisuals = akariVisuals,
                         shape = shape,
@@ -186,13 +201,13 @@ fun AkariTextField(
         }
 
         AnimatedVisibility(
-            visible = state.value.text.isEmpty() && state.placeholder != null,
+            visible = value.text.isEmpty() && akariSlots.placeholder != null,
             enter = fadeIn(animationSpec = tween(150)),
             exit = fadeOut(animationSpec = tween(150))
         ) {
             // Texto de soporte o error
-            state.supportingText?.let { supportingText ->
-                Box(modifier = Modifier.padding(akariStyle.textFieldPadding.supportingTextPadding)){
+            akariSlots.supportingText?.let { supportingText ->
+                Box(modifier = Modifier.padding(akariPadding.supportingText)){
                     CompositionLocalProvider(LocalContentColor provides supportingTextColor) {
                         supportingText()
                     }

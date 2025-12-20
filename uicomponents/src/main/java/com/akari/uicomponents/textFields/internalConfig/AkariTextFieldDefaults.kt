@@ -52,9 +52,10 @@ import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.akari.uicomponents.textFields.AkariTextField
-import com.akari.uicomponents.textFields.AkariTextFieldStyle
+import com.akari.uicomponents.textFields.config.AkariTextFieldConfig
+import com.akari.uicomponents.textFields.config.AkariTextFieldStyle
 import com.akari.uicomponents.textFields.internalConfig.AkariTextFieldDefaults.DecorationBox
-import com.akari.uicomponents.textFields.state.AkariTextFieldState
+import kotlin.let
 
 /**
  * Object that contains default values and configurations used by the [AkariTextField].
@@ -116,8 +117,8 @@ object AkariTextFieldDefaults {
      *
      * @param modifier The modifier to be applied to the decoration box.
      * @param innerTextField A composable that renders the actual text input area.
-     * @param state The current [AkariTextFieldState] which holds information about the
-     *   text field's content, style, and associated composables like label or icons.
+     * @param isTextEmpty A boolean indicating whether the text field's input is empty.
+     * @param config The configuration for the text field.
      * @param isFocused A boolean indicating whether the text field is currently focused.
      * @param akariVisuals An instance of [AkariTextFieldVisuals] that provides the dynamic
      *   colors for the different parts of the text field.
@@ -129,13 +130,17 @@ object AkariTextFieldDefaults {
     fun DecorationBox(
         modifier: Modifier = Modifier,
         innerTextField: @Composable () -> Unit,
-        state: AkariTextFieldState,
+        isTextEmpty: Boolean,
+        config: AkariTextFieldConfig,
         isFocused: Boolean,
         akariVisuals: AkariTextFieldVisuals,
         shape: Shape,
         useInternalLabel: Boolean
     ) {
-        val akariStyle = state.style
+        val akariStyle = config.style
+        val slots = config.slots
+        val padding = config.padding
+
         val borderThickness = remember(isFocused, akariStyle) {
             if (isFocused) {
                 akariStyle.focusedBorderThickness ?: FocusedBorderThickness
@@ -154,34 +159,34 @@ object AkariTextFieldDefaults {
         val prefixColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.PREFIX)
         val suffixColor by akariVisuals.animatedColor(AkariTextFieldVisuals.Component.SUFFIX)
 
-        val isLabelFloating = isFocused || state.value.text.isNotEmpty()
+        val isLabelFloating = isFocused || !isTextEmpty
 
         var labelWidth by remember { mutableIntStateOf(0) }
 
-        DebugStateIdentity(state)
+        DebugStateIdentity(config)
         TextFieldLayout(
             modifier = modifier,
-            label = if (useInternalLabel && state.label != null) {
+            label = if (useInternalLabel && slots.label != null) {
                 {
                     InternalLabel(
-                        label = state.label,
-                        akariStyle = akariStyle,
+                        label = slots.label,
                         labelColor = labelColor,
                         containerColor = backgroundColor,
-                        isFloating = isLabelFloating
+                        isFloating = isLabelFloating,
+                        labelPadding = padding.label
                     )
                 }
             } else null,
-            leadingIcon = state.leadingIcon?.let {
+            leadingIcon = slots.leadingIcon?.let {
                 {
-                    Wrapper(color = leadingIconColor, padding = akariStyle.textFieldPadding.leadingIconPadding) {
+                    Wrapper(color = leadingIconColor, padding = padding.leadingIcon) {
                         it(isFocused)
                     }
                 }
             },
-            prefix = state.prefix?.let {
+            prefix = slots.prefix?.let {
                 {
-                    Wrapper(color = prefixColor, padding = akariStyle.textFieldPadding.prefixPadding) {
+                    Wrapper(color = prefixColor, padding = padding.prefix) {
                         it()
                     }
                 }
@@ -191,10 +196,10 @@ object AkariTextFieldDefaults {
                     innerTextField()
                 }
             },
-            placeholder = state.placeholder?.let {
+            placeholder = slots.placeholder?.let {
                 {
-                    val showPlaceholder = remember(state.value.text, useInternalLabel, isLabelFloating) {
-                            state.value.text.isEmpty() && (!useInternalLabel || isLabelFloating)
+                    val showPlaceholder = remember(isTextEmpty, useInternalLabel, isLabelFloating) {
+                        isTextEmpty && (!useInternalLabel || isLabelFloating)
 
                     }
 
@@ -215,42 +220,42 @@ object AkariTextFieldDefaults {
                     }
                 }
             },
-            suffix = state.suffix?.let {
+            suffix = slots.suffix?.let {
                 {
-                    Wrapper(color = suffixColor, padding = akariStyle.textFieldPadding.suffixPadding) {
+                    Wrapper(color = suffixColor, padding = padding.suffix) {
                         it()
                     }
                 }
             },
-            trailingIcon = state.trailingIcon?.let {
+            trailingIcon = slots.trailingIcon?.let {
                 {
-                    Wrapper(color = trailingIconColor, padding = akariStyle.textFieldPadding.trailingIconPadding) {
+                    Wrapper(color = trailingIconColor, padding = padding.trailingIcon) {
                         it(isFocused)
                     }
                 }
             },
             isLabelFloating = isLabelFloating,
-            textFieldPadding = akariStyle.textFieldPadding.mainContentPadding,
+            textFieldPadding = padding.mainContent,
             shape = shape,
             borderColor = borderColor,
             backgroundColor = backgroundColor,
             borderThickness = borderThickness,
             labelWidth = labelWidth,
-            contentPadding = akariStyle.textFieldPadding.contentPadding
+            contentPadding = padding.content
         )
     }
 
     @Composable
-    fun DebugStateIdentity(state: AkariTextFieldState) {
+    fun DebugStateIdentity(config: AkariTextFieldConfig) {
         SideEffect {
             Log.d(
                 "StateIdentity",
-                "state hash=${System.identityHashCode(state)}"
+                "config hash=${System.identityHashCode(config)}"
             )
             Log.d(
                 "STYLE",
-                "style=${System.identityHashCode(state.style)} " +
-                        "behavior=${System.identityHashCode(state.behavior)}"
+                "style=${System.identityHashCode(config.style)} " +
+                        "behavior=${System.identityHashCode(config.behavior)}"
             )
         }
     }
@@ -326,7 +331,6 @@ object AkariTextFieldDefaults {
                         is Outline.Generic -> {
                             borderPath = outline.path
                         }
-                        else -> { /* no-op */ }
                     }
 
                     if (isLabelFloating && labelWidth > 0) {
@@ -523,7 +527,7 @@ object AkariTextFieldDefaults {
     @Composable
     private fun InternalLabel(
         label: @Composable () -> Unit,
-        akariStyle: AkariTextFieldStyle,
+        labelPadding: PaddingValues,
         labelColor: Color,
         containerColor: Color,
         isFloating: Boolean
@@ -559,13 +563,13 @@ object AkariTextFieldDefaults {
             CompositionLocalProvider(LocalContentColor provides labelColor) {
                 val bgColor = if (isInvisible) colorScheme.surface else containerColor
 
-                val backgroundModifier = remember(shape, bgColor, isFloating, akariStyle.textFieldPadding) {
+                val backgroundModifier = remember(shape, bgColor, isFloating, labelPadding) {
                     Modifier
                         .clip(shape)
                         .background(bgColor)
                         .then(
                             if (isFloating) {
-                                Modifier.padding(akariStyle.textFieldPadding.labelPadding)
+                                Modifier.padding(labelPadding)
                             } else {
                                 Modifier
                             }
