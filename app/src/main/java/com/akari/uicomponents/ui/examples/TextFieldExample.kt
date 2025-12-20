@@ -26,7 +26,6 @@ import com.akari.uicomponents.textFields.rememberAkariTextFieldConfig
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun TextFieldExample() {
-    val state = TextFieldState()
     var value by remember { mutableStateOf(TextFieldValue("")) }
     val focusManager = LocalFocusManager.current
     val firsFocusRequester = remember { FocusRequester() }

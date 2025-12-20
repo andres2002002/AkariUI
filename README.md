@@ -1,68 +1,71 @@
 # AkariUI
 
-AkariUI es una colección modular de componentes, utilidades y patrones estandarizados diseñados para facilitar la creación de interfaces modernas en Jetpack Compose. El objetivo es permitirte desarrollar aplicaciones más coherentes, escalables y reutilizables, manteniendo una experiencia clara tanto para el desarrollador como para el usuario.
+AkariUI is a modular collection of UI components, utilities, and standardized patterns designed to simplify the creation of modern user interfaces with **Jetpack Compose**. Its main goal is to help you build applications that are **consistent, scalable, and reusable**, while keeping a clean and pleasant experience for both developers and end users.
 
 ---
 
-## 🚀 Objetivos del proyecto
+## 🚀 Project Goals
 
-* Proveer **componentes reutilizables** con buenas prácticas.
-* Mantener una **arquitectura clara**, adaptable a cualquier proyecto Android.
-* Tener una capa UI desacoplada del resto de la app.
-* Ofrecer herramientas adicionales como:
+* Provide **reusable components** built with best practices in mind.
+* Maintain a **clear and flexible architecture** adaptable to any Android project.
+* Keep the UI layer **fully decoupled** from the rest of the application.
+* Offer additional tools such as:
 
-    * Estilos y temas personalizados.
-    * Utilidades comunes.
-    * Extensiones para Compose.
-    * Estructuras de navegación.
+    * Common utilities.
+    * Advanced UI components.
 
 ---
 
-## 📦 Estructura del proyecto
+## 📦 Project Structure
 
-El proyecto sigue una estructura modular clara para facilitar el mantenimiento.
+The project follows a clear modular structure to improve maintainability and scalability:
 
 ```
 uicomponents/
- ├─ buttons/        # Botones con funciones y comportamientos Personalizados
- └─ textFields/     # TextFields con estilos y comportamientos Personalizados
-
+ ├─ buttons/                 # Buttons with custom behaviors and styles
+ ├─ checkbox/                # Custom styled and behavior-driven checkboxes
+ ├─ reorderableComponents/   # Reorderable LazyColumns and Columns
+ └─ textFields/              # TextFields with advanced styles and behaviors
 ```
 
-Cada módulo está pensado para ser independiente y fácil de probar.
+Each module is designed to be **independent**, easy to test, and simple to integrate.
 
 ---
 
-## 🧩 Componentes incluidos
+## 🧩 Included Components
 
-Actualmente el proyecto incluye componentes como:
+Currently, AkariUI provides components such as:
 
-* **TextFields personalizados** con estados, colores y animaciones.
-* **Botones avanzados** (primarios, secundarios, iconificados, etc.).
-* **TooltipFAB** y variaciones.
-* **Contenedores, superficies y tarjetas**.
-* **Comportamientos reutilizables**, como manejo de focus, acciones del teclado, animaciones comunes.
+* **Custom TextFields** with state handling, colors, animations, and fine-grained design control.
+* **Advanced Buttons** with tooltips (icon, text, filled, outlined variants).
+* **TooltipFAB** and related variations.
+* **Custom Checkbox** components.
+* **Reorderable Columns** (both Lazy and standard vertical layouts).
 
-Cada componente está diseñado para ser:
+All components are designed to be:
 
-* Fácilmente integrable.
-* Totalmente personalizable.
-* Consistente con Material 3 pero extendido.
+* Easy to integrate.
+* Fully customizable.
+* Material 3–compatible, while extending its capabilities.
 
 ---
 
-## 🛠️ Configuración y uso
+## 🛠️ Setup and Usage
 
-Si el proyecto se distribuye como módulo local:
+If you want to use AkariUI as a local module:
 
-### 1. Ejecuta los comandos en AkariUI
+### 1. Build and publish AkariUI
+
+Run the following commands from the AkariUI project root:
 
 ```bash
 ./gradlew :uicomponents:assembleRelease
 ./gradlew :uicomponents:publishReleasePublicationToMavenLocal
 ```
 
-### 2. Agrega `mavenLocal` en `settings.gradle` del proyecto a exportar
+### 2. Add `mavenLocal` to your project
+
+In your target project's `settings.gradle`:
 
 ```kotlin
 repositories {
@@ -72,7 +75,7 @@ repositories {
 }
 ```
 
-### 3. Añádelo como dependencia
+### 3. Add the dependency
 
 ```kotlin
 dependencies {
@@ -80,56 +83,57 @@ dependencies {
 }
 ```
 
-### 4. Usa los componentes
+### 4. Use the components
 
 ```kotlin
 AkariTextField(
     value = text,
     onValueChange = { text = it },
-    label = "Nombre",
+    label = "Name",
 )
 ```
 
-## 🧪 Pruebas
+---
 
-El proyecto fomenta pruebas unitarias(Soon) y de UI.
-Recomendaciones:
+## 🧪 Testing
 
-* Probar cada componente individual.
-* Usar previews interactivas.
+The project encourages both **unit tests** (coming soon) and **UI tests**.
+
+Recommendations:
+
+* Test each component in isolation.
+* Use interactive previews whenever possible.
 
 ---
 
 ## 🛤️ Roadmap
 
-* [ ] Más componentes avanzados (SegmentedControls, Date/Time pickers).
-* [ ] Sistema de motion y animaciones global.
-* [ ] Integración con multiplatform (Compose Multiplatform).
-* [ ] Documentación completa por componente.
+* [ ] More advanced components (Segmented Controls, Date/Time Pickers).
+* [ ] Complete documentation for each component.
 
 ---
 
-## 🤝 Contribuciones
+## 🤝 Contributing
 
-Para contribuir:
+Contributions are welcome!
 
-1. Haz un fork del repositorio.
-2. Crea una rama descriptiva (`feature/mi-mejora`).
-3. Envia un Pull Request detallado.
-
----
-
-## 📄 Licencia
-
-MIT — Libre para usar, modificar y distribuir. ¡Dame crédito si puedes!
+1. Fork the repository.
+2. Create a descriptive branch (e.g. `feature/my-improvement`).
+3. Submit a detailed Pull Request.
 
 ---
 
-## 📬 Contacto
+## 📄 License
 
-Para dudas, mejoras o ideas:
+MIT — Free to use, modify, and distribute. Attribution is appreciated.
 
-* Abre un issue.
-* Envía comentarios directamente.
+---
 
-AkariUI está en crecimiento continuo (o eso intentare). ¡Gracias por usarlo! 🎉
+## 📬 Contact
+
+For questions, suggestions, or ideas:
+
+* Open an issue.
+* Send feedback directly.
+
+AkariUI is continuously evolving (or at least trying to). Thanks for using it! 🎉

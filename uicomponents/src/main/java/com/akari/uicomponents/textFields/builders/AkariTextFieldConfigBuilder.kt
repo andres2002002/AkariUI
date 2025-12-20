@@ -3,6 +3,34 @@ package com.akari.uicomponents.textFields.builders
 import androidx.compose.ui.focus.FocusProperties
 import com.akari.uicomponents.textFields.config.AkariTextFieldConfig
 
+/**
+ * A builder class for creating instances of [AkariTextFieldConfig].
+ *
+ * This class provides a DSL-style API to configure various aspects of an Akari text field,
+ * such as its visual style, interaction behavior, composable slots, layout padding,
+ * and focus properties.
+ *
+ * Example usage:
+ * ```
+ * val config = AkariTextFieldConfigBuilder().apply {
+ *     style {
+ *         // Configure visual style properties
+ *     }
+ *     behavior {
+ *         // Configure interaction behaviors
+ *     }
+ *     slots {
+ *         // Define leading or trailing icons, etc.
+ *     }
+ * }.build()
+ * ```
+ *
+ * @see AkariTextFieldConfig
+ * @see AkariTextFieldStyleBuilder
+ * @see AkariTextFieldBehaviorBuilder
+ * @see AkariTextFieldSlotsBuilder
+ * @see AkariTextFieldPaddingBuilder
+ */
 class AkariTextFieldConfigBuilder {
     private var style: AkariTextFieldStyleBuilder = AkariTextFieldStyleBuilder()
     private var behavior: AkariTextFieldBehaviorBuilder = AkariTextFieldBehaviorBuilder()

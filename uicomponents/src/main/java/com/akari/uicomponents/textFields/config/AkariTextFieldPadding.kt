@@ -3,9 +3,10 @@ package com.akari.uicomponents.textFields.config
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.unit.dp
+import com.akari.uicomponents.textFields.AkariTextField
 
 /**
- * Data class that holds the padding values for the different components of an [com.akari.uicomponents.textFields.AkariTextField].
+ * Data class that holds the padding values for the different components of an [AkariTextField].
  *
  * This class allows for detailed customization of the spacing around the text field's content, icons,
  * supporting text, prefix, suffix, and label.
