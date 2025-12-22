@@ -26,10 +26,12 @@ fun <T> rememberAkariReorderableLazyState(
     onDragEnd: (() -> Unit)? = null
 ): AkariReorderableLazyState<T> {
     val currentOnMove by rememberUpdatedState(onMove)
+    val currentOnDragStart by rememberUpdatedState(onDragStart)
+    val currentOnDragEnd by rememberUpdatedState(onDragEnd)
     return remember {
         AkariReorderableLazyState(
-            onDragStart = onDragStart,
-            onDragEnd = onDragEnd,
+            onDragStart = currentOnDragStart,
+            onDragEnd = currentOnDragEnd,
             onMove = currentOnMove
         )
     }
@@ -79,10 +81,13 @@ fun <T> rememberAkariReorderableColumnState(
     onDragStart: (() -> Unit)? = null,
     onDragEnd: (() -> Unit)? = null
 ): AkariReorderableColumnState<T> {
+    val currentOnMove by rememberUpdatedState(onMove)
+    val currentOnDragStart by rememberUpdatedState(onDragStart)
+    val currentOnDragEnd by rememberUpdatedState(onDragEnd)
     return remember { AkariReorderableColumnState(
-        onDragStart = onDragStart,
-        onDragEnd = onDragEnd,
-        onMove = onMove
+        onMove = currentOnMove,
+        onDragStart = currentOnDragStart,
+        onDragEnd = currentOnDragEnd
     ) }
 }
 
@@ -102,7 +107,8 @@ fun <T> rememberAkariReorderableColumnState(
 fun <T> rememberAkariReorderableColumnState(
     onMove: (from: Int, to: Int) -> Unit,
 ): AkariReorderableColumnState<T> {
+    val currentOnMove by rememberUpdatedState(onMove)
     return remember { AkariReorderableColumnState(
-        onMove = onMove
+        onMove = currentOnMove
     ) }
 }

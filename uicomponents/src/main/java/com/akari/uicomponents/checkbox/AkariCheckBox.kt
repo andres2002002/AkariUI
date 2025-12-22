@@ -38,6 +38,29 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 
+/**
+ * A highly customizable CheckBox component that supports custom animations, shapes, and icons for both checked and unchecked states.
+ *
+ * This component provides a polished, interactive experience with built-in press animations (scale effect) and transition animations
+ * (fade and scale with rotation) when the state changes. It adheres to Material Design accessibility standards by reporting semantic
+ * state descriptions.
+ *
+ * @param checked Whether this checkbox is currently selected.
+ * @param onCheckedChange Called when the user clicks the checkbox and requests a change in the state.
+ * @param modifier The modifier to be applied to the CheckBox layout.
+ * @param shape The shape of the checkbox background and border. Defaults to [MaterialTheme.shapes.small].
+ * @param innerPadding Padding applied inside the checkbox container, surrounding the icon. Defaults to 4.dp on all sides.
+ * @param minSize The minimum width and height of the touch target and visual container. Defaults to 24.dp x 24.dp.
+ * @param enabled Controls the enabled state of this checkbox. When `false`, this component will not respond to user input,
+ * and it will appear visually disabled and distinct from the enabled state.
+ * @param colors [AkariCheckBoxColors] that will be used to resolve the colors used for this checkbox in different states.
+ * See [AkariCheckBoxDefaults.colors].
+ * @param animationSpec The animation specification used for the icon appearance/disappearance transitions (fade and scale).
+ * Defaults to a tween animation with FastOutSlowInEasing.
+ * @param iconUnselected An optional composable to display when the checkbox is in the unchecked state. If null, nothing is shown
+ * when unchecked.
+ * @param iconSelected A composable to display when the checkbox is in the checked state.
+ */
 @Composable
 fun AkariCheckBox(
     checked: Boolean,

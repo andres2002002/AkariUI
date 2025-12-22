@@ -24,6 +24,27 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.zIndex
 
+/**
+ * A wrapper component representing a single reorderable item within a list or column context.
+ *
+ * This composable handles the gesture detection (drag-and-drop), visual transformations (elevation,
+ * scaling, z-index during drag), and communication with the reorderable state to update positions.
+ * It provides a scope (`AkariReorderableItemScope`) to its content, allowing specific UI elements
+ * (like a drag handle) to initiate the reordering process via the `dragHandleModifier`.
+ *
+ * There are two overloads of this function:
+ * 1. For use within a Lazy List context (requires `LazyItemScope`).
+ * 2. For use within a generic Column context.
+ *
+ * @param T The type of the data item being displayed.
+ * @param index The current index of this item in the list.
+ * @param state The state object managing the reordering logic (either [AkariReorderableLazyState] or [AkariReorderableColumnState]).
+ * @param enabled Whether reordering gestures are enabled for this item.
+ * @param dragActivation Defines how the drag gesture is initiated (e.g., [DragActivation.Immediate] or [DragActivation.LongPress]).
+ * @param isDragging Boolean flag indicating if this specific item is currently being dragged.
+ * @param content The UI content of the item. This lambda provides an [AkariReorderableItemScope] which exposes
+ * access to the `dragHandleModifier` for applying drag gestures to specific child components.
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun <T> LazyItemScope.AkariReorderableItem(
@@ -79,21 +100,21 @@ fun <T> LazyItemScope.AkariReorderableItem(
         AkariReorderableItemScope(updatedDragHandleModifier)
     }
 
-
-    // NO usar animateItem() en el ítem que se arrastra
-    val itemModifier = if (isDragging) {
-        Modifier
-            .zIndex(1f)
-            .graphicsLayer {
-                translationY = state.draggedOffsetY
-                shadowElevation = 16f
-                scaleX = 1.03f
-                scaleY = 1.03f
-            }
-    } else {
-        Modifier
-            .zIndex(0f)
-            .animateItem() // Solo animar ítems que NO se arrastran
+    val itemModifier = remember(isDragging) {
+        if (isDragging) {
+            Modifier
+                .zIndex(1f)
+                .graphicsLayer {
+                    translationY = state.draggedOffsetY
+                    shadowElevation = 16f
+                    scaleX = 1.03f
+                    scaleY = 1.03f
+                }
+        } else {
+            Modifier
+                .zIndex(0f)
+                .animateItem() // Solo animar ítems que NO se arrastran
+        }
     }
 
     Box(
@@ -104,6 +125,27 @@ fun <T> LazyItemScope.AkariReorderableItem(
     }
 }
 
+/**
+ * A composable wrapper that makes an individual item reorderable within a list or column context.
+ *
+ * There are two implementations of this function:
+ * 1. An extension on [LazyItemScope] optimized for Lazy lists using [AkariReorderableLazyState].
+ * 2. A standalone composable optimized for standard Columns using [AkariReorderableColumnState].
+ *
+ * The wrapper handles drag gesture detection based on the specified [DragActivation] strategy,
+ * manages z-index changes during dragging, applies translation/elevation effects, and exposes
+ * a specific scope [AkariReorderableItemScope] to apply the drag handle modifier to a specific
+ * UI element within the content.
+ *
+ * @param T The type of the data item being displayed.
+ * @param index The current index of this item in the data collection.
+ * @param state The state object managing the reordering logic (either [AkariReorderableLazyState] or [AkariReorderableColumnState]).
+ * @param item The data object representing this item (only for the Column version).
+ * @param enabled Whether drag-and-drop reordering is currently enabled for this item.
+ * @param dragActivation Defines how the drag gesture is initiated (e.g., [DragActivation.Immediate] or [DragActivation.LongPress]).
+ * @param isDragging Boolean flag indicating if this specific item is currently being dragged.
+ * @param itemContent The composable content of the item.
+ */
 @Composable
 fun <T> AkariReorderableItem(
     index: Int,
