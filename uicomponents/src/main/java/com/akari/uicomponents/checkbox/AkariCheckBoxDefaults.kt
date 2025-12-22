@@ -2,8 +2,13 @@ package com.akari.uicomponents.checkbox
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
+/**
+ * Contains default values used by [AkariCheckBox].
+ */
+@Immutable
 object AkariCheckBoxDefaults {
     @Composable
     fun colors(
