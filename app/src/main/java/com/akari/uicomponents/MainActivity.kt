@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import com.akari.uicomponents.ui.examples.DragAndDropExample
 import com.akari.uicomponents.ui.examples.DragDropColumnExample
 import com.akari.uicomponents.ui.examples.TextFieldExample
 import com.akari.uicomponents.ui.examples.TooltipButtonExample
@@ -25,8 +26,8 @@ class MainActivity : ComponentActivity() {
                         TooltipButtonExample()
                         TextFieldExample()
                         Text("Reorderable Column")
-                        DragDropColumnExample()
-                        //DragAndDropExample()
+                        //DragDropColumnExample()
+                        DragAndDropExample()
                     }
                 }
             }

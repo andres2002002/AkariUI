@@ -3,6 +3,7 @@ package com.akari.uicomponents.reorderableComponents
 import android.os.Build
 import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -93,18 +94,13 @@ fun <T> AkariReorderableLazyColumn(
         }
     }
 
-    // Auto-scroll optimizado: solo corre cuando hay drag activo
-    if (isDragging) {
-        AutoScrollEffect(state, lazyListState)
-    }
-
     LazyColumn(
         modifier = modifier,
         userScrollEnabled = userScrollEnabled,
         contentPadding = contentPadding,
         verticalArrangement = verticalArrangement,
         horizontalAlignment = horizontalAlignment,
-        state = lazyListState
+        state = lazyListState,
     ) {
         itemsIndexed(
             items = items,
