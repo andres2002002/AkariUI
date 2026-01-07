@@ -152,29 +152,33 @@ fun CheckBoxExample(){
 }
 ```
 
-AkariTooltipButton example:
+AkariTooltip example:
 ```kotlin
 @Composable
 fun TooltipButtonExample(){
     val shapes = MaterialTheme.shapes
     val colors = MaterialTheme.colorScheme
-    AkariTooltipButton(
-        variant = AkariButtonVariant.Filled,
-        onClick = {},
-        buttonConfig = AkariButtonConfig {
+    AkariTooltip(
+        text = "Tooltip Example",
+        tooltipConfig = AkariTooltipConfig(
+            persistent = true
+        ),
+        style = AkariTooltipStyle.PlainTooltip(
+            containerColor = colors.primary,
+            contentColor = colors.onPrimary
+        )
+    ) {
+        Button(
+            onClick = {},
             shape = shapes.extraSmall
-            border = BorderStroke(width = 3.dp, color = colors.tertiaryContainer)
-        },
-        tooltipContent = {
-            Text(text = "Tooltip Example")
+        ) {
+            Text(text = "Hello World")
         }
-    ){
-        Text(text = "Hello World")
     }
 }
 ```
 
-AkariReorderableLazyColumn example:
+AkariReorderableLazyColumn example _(not working)_:
 ```kotlin
 @Composable
 fun DragAndDropExample() {
@@ -215,7 +219,7 @@ fun DragAndDropExample() {
 }
 ```
 
-AkariReorderableColumn example:
+AkariReorderableColumn example _(not working)_:
 ```kotlin
 @Composable
 fun DragDropColumnExample() {
