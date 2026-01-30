@@ -157,33 +157,3 @@ fun AkariCheckBox(
         }
     }
 }
-
-@Composable
-private fun IconTransition(
-    checked: Boolean,
-    animationSpec: FiniteAnimationSpec<Float>,
-    iconSelected: @Composable () -> Unit,
-    iconUnselected: @Composable () -> Unit
-){
-    // Animación del icono seleccionado con escala y rotación
-    AnimatedVisibility(
-        visible = checked,
-        enter = fadeIn(animationSpec = animationSpec) +
-                scaleIn(initialScale = 0.8f, animationSpec = animationSpec),
-        exit = fadeOut(animationSpec = animationSpec) +
-                scaleOut(targetScale = 0.8f, animationSpec = animationSpec)
-    ) {
-        iconSelected()
-    }
-
-    // Icono no seleccionado
-    AnimatedVisibility(
-        visible = !checked,
-        enter = fadeIn(animationSpec = animationSpec) +
-                scaleIn(initialScale = 0.8f, animationSpec = animationSpec),
-        exit = fadeOut(animationSpec = animationSpec) +
-                scaleOut(targetScale = 0.8f, animationSpec = animationSpec)
-    ) {
-        iconUnselected()
-    }
-}

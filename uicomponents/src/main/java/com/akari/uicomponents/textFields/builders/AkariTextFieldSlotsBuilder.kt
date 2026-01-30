@@ -3,6 +3,7 @@ package com.akari.uicomponents.textFields.builders
 import androidx.compose.runtime.Composable
 import com.akari.uicomponents.textFields.config.AkariTextFieldSlots
 import com.akari.uicomponents.textFields.AkariTextField
+import com.akari.uicomponents.textFields.internalConfig.AkariTextFieldDsl
 
 /**
  * A builder class for configuring the composable slots of an [AkariTextField].
@@ -29,6 +30,7 @@ import com.akari.uicomponents.textFields.AkariTextField
  * @property trailingIcon A composable for an icon at the end of the field (e.g., clear button). Accepts a boolean indicating error state.
  * @see AkariTextFieldSlots
  */
+@AkariTextFieldDsl
 class AkariTextFieldSlotsBuilder {
     var label: (@Composable () -> Unit)? = null
     var placeholder: (@Composable () -> Unit)? = null

@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import com.akari.uicomponents.textFields.config.AkariTextFieldStyle
+import com.akari.uicomponents.textFields.internalConfig.AkariTextFieldDsl
 
 /**
  * A builder class for creating customized instances of [AkariTextFieldStyle].
@@ -30,6 +31,7 @@ import com.akari.uicomponents.textFields.config.AkariTextFieldStyle
  * @property cursorBrush The brush used to draw the cursor.
  * @param base An optional existing [AkariTextFieldStyle] to use as a starting point. Defaults to a standard empty style.
  */
+@AkariTextFieldDsl
 class AkariTextFieldStyleBuilder(private val base: AkariTextFieldStyle = AkariTextFieldStyle()) {
     var textStyle: TextStyle? = base.textStyle
     var shape: Shape? = base.shape

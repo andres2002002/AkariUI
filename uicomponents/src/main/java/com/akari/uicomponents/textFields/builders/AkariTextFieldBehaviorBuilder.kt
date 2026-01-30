@@ -5,6 +5,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.VisualTransformation
 import com.akari.uicomponents.textFields.AkariLabelBehavior
 import com.akari.uicomponents.textFields.config.AkariTextFieldBehavior
+import com.akari.uicomponents.textFields.internalConfig.AkariTextFieldDsl
 
 /**
  * A builder class for creating instances of [AkariTextFieldBehavior].
@@ -28,6 +29,7 @@ import com.akari.uicomponents.textFields.config.AkariTextFieldBehavior
  * @property keyboardActions Callbacks to be executed when specific IME actions are triggered.
  * @property visualTransformation Filter for changing the visual output of the input (e.g., password masking).
  */
+@AkariTextFieldDsl
 class AkariTextFieldBehaviorBuilder(private val base: AkariTextFieldBehavior = AkariTextFieldBehavior()) {
     var labelBehavior: AkariLabelBehavior = base.labelBehavior
     var readOnly: Boolean = base.readOnly
