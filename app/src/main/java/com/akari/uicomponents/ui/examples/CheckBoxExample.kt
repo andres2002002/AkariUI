@@ -3,6 +3,8 @@ package com.akari.uicomponents.ui.examples
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -20,12 +22,15 @@ import com.akari.uicomponents.checkbox.AkariCheckBox
 fun CheckBoxExample(){
     var checked by remember { mutableStateOf(false) }
     AkariCheckBox(
-        modifier = Modifier.padding(32.dp),
+        modifier = Modifier,
         checked = checked,
         onCheckedChange = { checked = it },
         shape = MaterialTheme.shapes.small,
+        iconUnselected = {
+            Icon(Icons.Filled.Pets, contentDescription = null)
+        },
         iconSelected = {
-            Icon(Icons.Filled.Check, contentDescription = null, tint = MaterialTheme.colorScheme.background)
+            Icon(Icons.Filled.Person, contentDescription = null)
         }
     )
 }
