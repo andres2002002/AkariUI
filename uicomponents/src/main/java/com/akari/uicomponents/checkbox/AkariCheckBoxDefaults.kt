@@ -1,9 +1,11 @@
 package com.akari.uicomponents.checkbox
 
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion
 
 /**
  * Contains default values used by [AkariCheckBox].
@@ -12,22 +14,26 @@ import androidx.compose.ui.graphics.Color
 object AkariCheckBoxDefaults {
     @Composable
     fun colors(
-        checkedBackgroundColor: Color = MaterialTheme.colorScheme.primary,
-        uncheckedBackgroundColor: Color = MaterialTheme.colorScheme.surfaceVariant,
+        checkedBoxColor: Color = MaterialTheme.colorScheme.primary,
+        uncheckedBoxColor: Color = MaterialTheme.colorScheme.surfaceVariant,
+        checkedCheckmarkColor: Color = MaterialTheme.colorScheme.onPrimary,
+        uncheckedCheckmarkColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+        disabledCheckedBoxColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.38f),
+        disabledUncheckedBoxColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.38f),
         checkedBorderColor: Color = MaterialTheme.colorScheme.primary,
         uncheckedBorderColor: Color = MaterialTheme.colorScheme.outline,
-        disabledCheckedBackgroundColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.38f),
-        disabledUncheckedBackgroundColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.38f),
-        disabledCheckedBorderColor: Color = MaterialTheme.colorScheme.outline.copy(alpha = 0.38f),
+        disabledCheckedBorderColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.38f),
         disabledUncheckedBorderColor: Color = MaterialTheme.colorScheme.outline.copy(alpha = 0.38f),
         rippleColor: Color = MaterialTheme.colorScheme.primary
     ): AkariCheckBoxColors = AkariCheckBoxColors(
-        checkedBackgroundColor = checkedBackgroundColor,
-        uncheckedBackgroundColor = uncheckedBackgroundColor,
+        checkedCheckmarkColor = checkedCheckmarkColor,
+        uncheckedCheckmarkColor = uncheckedCheckmarkColor,
+        checkedBoxColor = checkedBoxColor,
+        uncheckedBoxColor = uncheckedBoxColor,
+        disabledCheckedBoxColor = disabledCheckedBoxColor,
+        disabledUncheckedBoxColor = disabledUncheckedBoxColor,
         checkedBorderColor = checkedBorderColor,
         uncheckedBorderColor = uncheckedBorderColor,
-        disabledCheckedBackgroundColor = disabledCheckedBackgroundColor,
-        disabledUncheckedBackgroundColor = disabledUncheckedBackgroundColor,
         disabledCheckedBorderColor = disabledCheckedBorderColor,
         disabledUncheckedBorderColor = disabledUncheckedBorderColor,
         rippleColor = rippleColor

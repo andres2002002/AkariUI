@@ -75,6 +75,9 @@ object AkariTextFieldDefaults {
     val textStyle: TextStyle
         @Composable get() = LocalTextStyle.current
 
+    val labelTextStyle: TextStyle
+        @Composable get() = MaterialTheme.typography.labelLarge
+
     /**
      * The default min height applied to an [AkariTextField]. Note that you can override it by
      * applying Modifier.heightIn directly on a text field.
@@ -94,7 +97,6 @@ object AkariTextFieldDefaults {
     val FocusedBorderThickness = 2.dp
 
     @Composable fun colors() = OutlinedTextFieldDefaults.colors()
-
     // Specs de animación reutilizables (constantes en memoria)
     private val LabelAnimationSpec = tween<Float>(250)
     private val LabelPositionAnimationSpec = tween<IntOffset>(250)
@@ -296,16 +298,11 @@ object AkariTextFieldDefaults {
 
         Layout(
             modifier = modifier
-                // Dibujar el border con corte para el label
                 .drawWithContent {
-                    // Primero dibujar el background
                     drawRect(color = backgroundColor)
-
-                    // Obtener el outline del shape para extraer los corner radius
                     val outline = shape.createOutline(size, layoutDirection, this)
                     val borderWidthPx = borderThickness.toPx()
 
-                    // Construir borderPath reutilizando 'borderPath' Path ya existente
                     borderPath.reset()
                     when (outline) {
                         is Outline.Rounded -> {
@@ -340,7 +337,6 @@ object AkariTextFieldDefaults {
                         val cutWidth = (labelWidth * 0.75f) + (labelPaddingHorizontal * 2)
                         val cutHeight = borderWidthPx * 3
 
-                        // Construir el rect de corte en cutPath
                         cutPath.reset()
                         cutPath.addRect(
                             Rect(
@@ -349,7 +345,6 @@ object AkariTextFieldDefaults {
                             )
                         )
 
-                        // finalPath = borderPath - cutPath (reutilizando finalPath)
                         finalPath.reset()
                         finalPath.op(borderPath, cutPath, PathOperation.Difference)
 
@@ -385,12 +380,12 @@ object AkariTextFieldDefaults {
                 prefix?.let { Box(Modifier.layoutId(PREFIX_ID)) { it() } }
                 Box(
                     Modifier.layoutId(TEXT_FIELD_ID),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.CenterStart // Alineado al inicio para permitir crecimiento
                 ) { textField() }
                 placeholder?.let {
                     Box(
                         Modifier.layoutId(PLACEHOLDER_ID),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.CenterStart
                     ) { it() }
                 }
                 suffix?.let { Box(Modifier.layoutId(SUFFIX_ID)) { it() } }
@@ -400,13 +395,14 @@ object AkariTextFieldDefaults {
             val looseConstraints = constraints.copy(minWidth = 0, minHeight = 0)
             val measurableMap = measurables.associateBy { it.layoutId }
 
-            // Medir todos los componentes
+            // 1. Medir componentes decorativos (Leading, Trailing, Label, Prefix, Suffix)
             val leadingPlaceable = measurableMap[LEADING_ID]?.measure(looseConstraints)
             val trailingPlaceable = measurableMap[TRAILING_ID]?.measure(looseConstraints)
             val prefixPlaceable = measurableMap[PREFIX_ID]?.measure(looseConstraints)
             val suffixPlaceable = measurableMap[SUFFIX_ID]?.measure(looseConstraints)
+            val labelPlaceable = measurableMap[LABEL_ID]?.measure(looseConstraints)
 
-            // calculos de paddings una sola vez
+            // 2. Calcular espacio ocupado horizontalmente por decoraciones y paddings
             val leftPad = textFieldPadding.calculateLeftPadding(layoutDirection).roundToPx()
             val rightPad = textFieldPadding.calculateRightPadding(layoutDirection).roundToPx()
             val topPad = textFieldPadding.calculateTopPadding().roundToPx()
@@ -418,96 +414,101 @@ object AkariTextFieldDefaults {
                     (prefixPlaceable?.width ?: 0) +
                     (suffixPlaceable?.width ?: 0) +
                     horizontalPadding
+
+            // 3. Medir el TextField (y Placeholder).
+            // IMPORTANTE: Ajustamos minWidth para forzar al TextField a llenar el espacio disponible
+            // si el constraint padre lo dicta (ej. fillMaxWidth).
+            val effectiveMinWidth = (constraints.minWidth - occupiedWidth).coerceAtLeast(0)
+            val effectiveMaxWidth = (constraints.maxWidth - occupiedWidth).coerceAtLeast(0)
+
             val textFieldConstraints = constraints.copy(
-                minWidth = 0,
-                maxWidth = (constraints.maxWidth - occupiedWidth).coerceAtLeast(0)
+                minWidth = effectiveMinWidth,
+                maxWidth = effectiveMaxWidth
             )
 
             val textFieldPlaceable = measurableMap[TEXT_FIELD_ID]!!.measure(textFieldConstraints)
             val placeholderPlaceable = measurableMap[PLACEHOLDER_ID]?.measure(textFieldConstraints)
-            val labelPlaceable = measurableMap[LABEL_ID]?.measure(looseConstraints)
 
+            // 4. Calcular dimensiones finales del Layout
+            val contentWidth = occupiedWidth + textFieldPlaceable.width
+            val width = constraints.constrainWidth(contentWidth)
 
-            // Calcular altura del contenedor
             val contentHeight = maxOf(
                 textFieldPlaceable.height,
                 leadingPlaceable?.height ?: 0,
-                trailingPlaceable?.height ?: 0
+                trailingPlaceable?.height ?: 0,
+                prefixPlaceable?.height ?: 0,
+                suffixPlaceable?.height ?: 0,
+                placeholderPlaceable?.height ?: 0
             ) + topPad + bottomPad
 
-            val width = constraints.constrainWidth(
-                (leadingPlaceable?.width ?: 0) +
-                        (prefixPlaceable?.width ?: 0) +
-                        textFieldPlaceable.width +
-                        (suffixPlaceable?.width ?: 0) +
-                        (trailingPlaceable?.width ?: 0) +
-                        horizontalPadding
-            )
             val height = constraints.constrainHeight(contentHeight)
 
             layout(width, height) {
-                // Posicionar componentes horizontalmente
-                var currentX = 0
                 val centerY = height / 2
 
-                // Leading icon
+                // --- POSICIONAMIENTO HORIZONTAL ---
+
+                // 1. Leading Icon (Inicio)
+                var currentX = 0
                 leadingPlaceable?.let {
-                    it.placeRelative(currentX, centerY - (it.height/2))
+                    it.placeRelative(currentX, centerY - (it.height / 2))
                     currentX += it.width
                 }
 
-                // Prefix
+                // 2. Prefix
                 prefixPlaceable?.let {
-                    it.placeRelative(currentX, centerY - (it.height/2))
+                    it.placeRelative(currentX, centerY - (it.height / 2))
                     currentX += it.width
                 }
 
-                // Text field padding left
-                currentX += textFieldPadding.calculateLeftPadding(layoutDirection).roundToPx()
+                // Padding interno del TextField
+                currentX += leftPad
 
-                val textFieldX = currentX
-                // TextField y Placeholder centrados verticalmente
+                // 3. TextField y Placeholder (Ocupan el espacio central)
                 val textFieldY = centerY - (textFieldPlaceable.height / 2)
+                textFieldPlaceable.placeRelative(currentX, textFieldY)
+                placeholderPlaceable?.placeRelative(currentX, centerY - (placeholderPlaceable.height / 2))
 
-                // TextField
-                textFieldPlaceable.placeRelative(textFieldX, textFieldY)
+                // Avanzamos currentX basado en el ancho real del textfield medido
+                currentX += textFieldPlaceable.width
 
-                // Placeholder (misma posición que el texto, también centrado)
-                placeholderPlaceable?.placeRelative(textFieldX, textFieldY)
-
-                currentX += textFieldPlaceable.width +
-                        textFieldPadding.calculateRightPadding(layoutDirection).roundToPx()
-
-                // Suffix
+                // 4. Suffix
                 suffixPlaceable?.let {
-                    it.placeRelative(currentX, centerY - (it.height/2))
+                    it.placeRelative(currentX, centerY - (it.height / 2))
+                    // No es estrictamente necesario sumar a currentX aquí para el trailing,
+                    // ya que el trailing se calcula desde el final, pero mantenemos consistencia
                     currentX += it.width
                 }
 
-                // Trailing icon
+                // 5. Trailing Icon (Anclado al Final)
+                // Se calcula relativo al ancho total del contenedor (width)
                 trailingPlaceable?.let {
-                    it.placeRelative(currentX, centerY - (it.height/2))
+                    val trailingX = width - it.width
+                    it.placeRelative(trailingX, centerY - (it.height / 2))
                 }
 
-                // Label - calcular posición objetivo y aplicar offset animado
+                // --- POSICIONAMIENTO DEL LABEL ---
                 labelPlaceable?.let {
                     val labelY = if (isLabelFloating) {
-                        // Cuando flota, va arriba centrado verticalmente en su mitad
-                        - (it.height * 3/4)
+                        -(it.height * 3 / 4)
                     } else {
-                        // Cuando no flota, centrado verticalmente en el contenedor
                         centerY - (it.height / 2)
                     }
+
+                    // Si flota, X=0 (ajustado por padding en InternalLabel).
+                    // Si no flota, se alinea con el inicio del texto (después del leading/prefix).
                     val labelX = if (isLabelFloating) {
                         0
                     } else {
-                        textFieldX
+                        // Recalculamos la posición X inicial del texto para alinear el label
+                        var startTextX = 0
+                        if (leadingPlaceable != null) startTextX += leadingPlaceable.width
+                        if (prefixPlaceable != null) startTextX += prefixPlaceable.width
+                        startTextX + leftPad
                     }
 
-                    // Actualizar posición objetivo
                     labelTargetPosition = IntOffset(labelX, labelY)
-
-                    // Colocar en 0,0 porque el offset animado lo moverá
                     it.placeRelative(0, 0)
                 }
             }
@@ -517,10 +518,14 @@ object AkariTextFieldDefaults {
     @Composable
     private fun Wrapper(
         color: Color,
+        style: TextStyle = labelTextStyle,
         padding: PaddingValues,
         content: @Composable () -> Unit
     ) {
-        CompositionLocalProvider(LocalContentColor provides color) {
+        CompositionLocalProvider(
+            LocalContentColor provides color,
+            LocalTextStyle provides style
+        ) {
             Box(modifier = Modifier.padding(padding)) { content() }
         }
     }

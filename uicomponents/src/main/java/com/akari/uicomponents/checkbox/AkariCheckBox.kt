@@ -1,16 +1,20 @@
 package com.akari.uicomponents.checkbox
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -18,11 +22,15 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -80,37 +88,43 @@ fun AkariCheckBox(
 
     // Animación de escala cuando se presiona
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.95f else 1f,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium),
-        label = "scale"
+        targetValue = if (isPressed) 0.92f else 1f,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "PressScale"
     )
+
+    val transition = updateTransition(targetState = checked, label = "CheckedTransition")
+
+    val backgroundColor by transition.animateColor(label = "BgColor") { target ->
+        colors.boxColor(enabled, target)
+    }
+
+    val borderColor by transition.animateColor(label = "BorderColor") { target ->
+        colors.borderColor(enabled, target)
+    }
+
+    val markColor by transition.animateColor(label = "MarkColor") { target ->
+        if (target) colors.checkedCheckmarkColor else colors.uncheckedCheckmarkColor
+    }
 
     Box(
         modifier = modifier
-            .scale(scale)
+            .minimumInteractiveComponentSize()
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
             .clip(shape)
             .sizeIn(minWidth = minSize.width, minHeight = minSize.height)
             .background(
-                color = when {
-                    !enabled -> colors.disabledBackgroundColor(checked)
-                    checked -> colors.checkedBackgroundColor
-                    else -> colors.uncheckedBackgroundColor
-                },
+                color = backgroundColor,
                 shape = shape
             )
             .border(
                 width = if (checked) 2.dp else 1.dp, // Borde más grueso cuando está seleccionado
-                color = when {
-                    !enabled -> colors.disabledBorderColor(checked)
-                    checked -> colors.checkedBorderColor
-                    else -> colors.uncheckedBorderColor
-                },
+                color = borderColor,
                 shape = shape
             )
-            .semantics {
-                role = Role.Checkbox
-                this.stateDescription = if (checked) "Seleccionado" else "No seleccionado"
-            }
             .toggleable(
                 value = checked,
                 enabled = enabled,
@@ -119,38 +133,26 @@ fun AkariCheckBox(
                     bounded = true,
                     color = colors.rippleColor
                 ),
-                onValueChange = onCheckedChange
+                onValueChange = onCheckedChange,
+                role = Role.Checkbox
             )
             .padding(paddingValues = innerPadding),
         contentAlignment = Alignment.Center
     ) {
-        // Animación del icono seleccionado con escala y rotación
-        AnimatedVisibility(
-            visible = checked,
-            enter = fadeIn(animationSpec = animationSpec) +
-                    scaleIn(initialScale = 0.8f, animationSpec = animationSpec),
-            exit = fadeOut(animationSpec = animationSpec) +
-                    scaleOut(targetScale = 0.8f, animationSpec = animationSpec)
-        ) {
-            Box(
-                modifier = Modifier.graphicsLayer {
-                    rotationZ = if (checked) 0f else -90f
+        CompositionLocalProvider(LocalContentColor provides markColor) {
+            AnimatedContent(
+                targetState = checked,
+                transitionSpec = {
+                    (fadeIn(animationSpec) + scaleIn(initialScale = 0.8f))
+                        .togetherWith(fadeOut(animationSpec) + scaleOut(targetScale = 0.8f))
+                },
+                label = "IconContent"
+            ) { isChecked ->
+                if (isChecked) {
+                    iconSelected()
+                } else {
+                    iconUnselected?.invoke() ?: Box(Modifier.size(minSize))
                 }
-            ) {
-                iconSelected()
-            }
-        }
-
-        // Icono no seleccionado
-        iconUnselected?.let { icon ->
-            AnimatedVisibility(
-                visible = !checked,
-                enter = fadeIn(animationSpec = animationSpec) +
-                        scaleIn(initialScale = 0.8f, animationSpec = animationSpec),
-                exit = fadeOut(animationSpec = animationSpec) +
-                        scaleOut(targetScale = 0.8f, animationSpec = animationSpec)
-            ) {
-                icon()
             }
         }
     }

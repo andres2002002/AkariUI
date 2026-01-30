@@ -2,6 +2,7 @@ package com.akari.uicomponents.textFields.builders
 
 import androidx.compose.foundation.layout.PaddingValues
 import com.akari.uicomponents.textFields.config.AkariTextFieldPadding
+import com.akari.uicomponents.textFields.internalConfig.AkariTextFieldDsl
 
 /**
  * A builder class for creating [AkariTextFieldPadding] instances.
@@ -29,6 +30,7 @@ import com.akari.uicomponents.textFields.config.AkariTextFieldPadding
  * @property labelPadding Padding applied to the floating label.
  * @property mainContentPadding Padding applied to the main content wrapper which holds the text input and placeholders.
  */
+@AkariTextFieldDsl
 class AkariTextFieldPaddingBuilder(private val base: AkariTextFieldPadding = AkariTextFieldPadding()) {
     var externalContentPadding: PaddingValues = base.externalContent
     var contentPadding: PaddingValues = base.content

@@ -1,6 +1,7 @@
 package com.akari.uicomponents.checkbox
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 
 /**
@@ -17,21 +18,29 @@ import androidx.compose.ui.graphics.Color
  * @property rippleColor The color used for the ripple effect when the checkbox is pressed.
  */
 // Clase de datos para colores personalizables
-@Immutable
+@Stable
 data class AkariCheckBoxColors(
-    val checkedBackgroundColor: Color,
-    val uncheckedBackgroundColor: Color,
+    val checkedCheckmarkColor: Color,
+    val uncheckedCheckmarkColor: Color,
+    val checkedBoxColor: Color,
+    val uncheckedBoxColor: Color,
+    val disabledCheckedBoxColor: Color,
+    val disabledUncheckedBoxColor: Color,
     val checkedBorderColor: Color,
     val uncheckedBorderColor: Color,
-    val disabledCheckedBackgroundColor: Color,
-    val disabledUncheckedBackgroundColor: Color,
     val disabledCheckedBorderColor: Color,
     val disabledUncheckedBorderColor: Color,
-    val rippleColor: Color
+    val rippleColor: Color,
 ) {
-    fun disabledBackgroundColor(checked: Boolean): Color =
-        if (checked) disabledCheckedBackgroundColor else disabledUncheckedBackgroundColor
+    fun boxColor(enabled: Boolean, checked: Boolean): Color = when {
+        !enabled -> if (checked) disabledCheckedBoxColor else disabledUncheckedBoxColor
+        checked -> checkedBoxColor
+        else -> uncheckedBoxColor
+    }
 
-    fun disabledBorderColor(checked: Boolean): Color =
-        if (checked) disabledCheckedBorderColor else disabledUncheckedBorderColor
+    fun borderColor(enabled: Boolean, checked: Boolean): Color = when {
+        !enabled -> if (checked) disabledCheckedBorderColor else disabledUncheckedBorderColor
+        checked -> checkedBorderColor
+        else -> uncheckedBorderColor
+    }
 }

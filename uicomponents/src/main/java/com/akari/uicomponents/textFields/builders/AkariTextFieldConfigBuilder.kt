@@ -2,6 +2,7 @@ package com.akari.uicomponents.textFields.builders
 
 import androidx.compose.ui.focus.FocusProperties
 import com.akari.uicomponents.textFields.config.AkariTextFieldConfig
+import com.akari.uicomponents.textFields.internalConfig.AkariTextFieldDsl
 
 /**
  * A builder class for creating instances of [AkariTextFieldConfig].
@@ -31,6 +32,7 @@ import com.akari.uicomponents.textFields.config.AkariTextFieldConfig
  * @see AkariTextFieldSlotsBuilder
  * @see AkariTextFieldPaddingBuilder
  */
+@AkariTextFieldDsl
 class AkariTextFieldConfigBuilder {
     private var style: AkariTextFieldStyleBuilder = AkariTextFieldStyleBuilder()
     private var behavior: AkariTextFieldBehaviorBuilder = AkariTextFieldBehaviorBuilder()
