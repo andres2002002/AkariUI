@@ -1,4 +1,4 @@
-package com.akari.uicomponents.ui.examples
+package com.akari.akariui.ui.examples
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions

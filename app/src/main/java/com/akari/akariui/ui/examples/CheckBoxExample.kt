@@ -1,4 +1,4 @@
-package com.akari.uicomponents.ui.examples
+package com.akari.akariui.ui.examples
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons

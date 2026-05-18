@@ -1,4 +1,4 @@
-package com.akari.uicomponents
+package com.akari.akariui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -9,12 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
-import com.akari.uicomponents.ui.examples.CheckBoxExample
-import com.akari.uicomponents.ui.examples.DragAndDropExample
-import com.akari.uicomponents.ui.examples.DragDropColumnExample
-import com.akari.uicomponents.ui.examples.TextFieldExample
-import com.akari.uicomponents.ui.examples.TooltipButtonExample
-import com.akari.uicomponents.ui.theme.AkariUITheme
+import com.akari.akariui.ui.examples.CheckBoxExample
+import com.akari.akariui.ui.examples.DragAndDropExample
+import com.akari.akariui.ui.examples.TextFieldExample
+import com.akari.akariui.ui.examples.TooltipButtonExample
+import com.akari.akariui.ui.theme.AkariUITheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

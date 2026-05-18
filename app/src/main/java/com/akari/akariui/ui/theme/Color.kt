@@ -1,4 +1,4 @@
-package com.akari.uicomponents.ui.theme
+package com.akari.akariui.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
