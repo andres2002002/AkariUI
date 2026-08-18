@@ -18,12 +18,6 @@ fun<S> AkariScaffold(
     config: AkariScaffoldConfig<S>,
     content: @Composable () -> Unit
 ) {
-
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-
-    val currentDrawerContent = config.drawerSheet(currentSize)
-
     val scaffoldContent: @Composable () -> Unit = {
         Scaffold(
             topBar = {
@@ -50,12 +44,15 @@ fun<S> AkariScaffold(
         }
     }
 
-    if (currentDrawerContent != null) {
+    if (config.hasAnyDrawer) {
+        val drawerState = rememberDrawerState(DrawerValue.Closed)
+        val scope = rememberCoroutineScope()
+        val currentDrawerContent = config.drawerSheet(currentSize)
         ModalNavigationDrawer(
             drawerState = drawerState,
-            gesturesEnabled = config.gesturesEnabled,
+            gesturesEnabled = currentDrawerContent != null && config.gesturesEnabled,
             drawerContent = {
-                currentDrawerContent.invoke {
+                currentDrawerContent?.invoke {
                     scope.launch { drawerState.close() }
                 }
             }

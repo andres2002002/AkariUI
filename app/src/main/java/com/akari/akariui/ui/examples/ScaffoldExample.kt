@@ -1,6 +1,5 @@
 package com.akari.akariui.ui.examples
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
@@ -17,7 +16,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.akari.uicomponents.scaffold.AkariScaffold
 import com.akari.uicomponents.scaffold.rememberAkariScaffoldConfig
@@ -127,7 +125,7 @@ private fun MyCustomFab() {
         }
     ) {
         FloatingActionButton(
-            onClick = { /*TODO*/ }
+            onClick = {  }
         ) {
             Icon(Icons.Default.Add, contentDescription = "Add")
         }
